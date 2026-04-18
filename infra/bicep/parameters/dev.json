@@ -1,0 +1,154 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": {
+      "value": "dev"
+    },
+    "location": {
+      "value": "westus3"
+    },
+    "namePrefix": {
+      "value": "lb"
+    },
+    "tags": {
+      "value": {
+        "environment": "dev",
+        "project": "LeagueBrief"
+      }
+    },
+    "enableCustomDomain": {
+      "value": false
+    },
+    "publicHostName": {
+      "value": "dev.leaguebrief.com"
+    },
+    "manageDnsInAzure": {
+      "value": false
+    },
+    "dnsZoneResourceId": {
+      "value": ""
+    },
+    "frontDoorWafMode": {
+      "value": "Detection"
+    },
+    "frontDoorApiRateLimitThreshold": {
+      "value": 600
+    },
+    "frontDoorApiRateLimitDurationMinutes": {
+      "value": 1
+    },
+    "staticWebAppSku": {
+      "value": "Standard"
+    },
+    "staticWebAppPublicNetworkAccess": {
+      "value": "Enabled"
+    },
+    "staticWebAppStagingPolicy": {
+      "value": "Enabled"
+    },
+    "functionRuntimeName": {
+      "value": "python"
+    },
+    "functionRuntimeVersion": {
+      "value": "3.12"
+    },
+    "functionInstanceMemoryMb": {
+      "value": 2048
+    },
+    "functionMaximumInstanceCount": {
+      "value": 50
+    },
+    "apiHttpPerInstanceConcurrency": {
+      "value": 20
+    },
+    "apiAlwaysReadyInstances": {
+      "value": 0
+    },
+    "workerAlwaysReadyInstances": {
+      "value": 0
+    },
+    "storageBlobContainerNames": {
+      "value": [
+        "raw-espn",
+        "fantasypros-source",
+        "exports",
+        "job-artifacts"
+      ]
+    },
+    "storageQueueNames": {
+      "value": [
+        "import-jobs"
+      ]
+    },
+    "sqlAdministratorLogin": {
+      "value": "leaguebriefadmin"
+    },
+    "sqlAdministratorPassword": {
+      "value": ""
+    },
+    "sqlEntraAdminLogin": {
+      "value": "dev-admin@contoso.com"
+    },
+    "sqlEntraAdminObjectId": {
+      "value": "00000000-0000-0000-0000-000000000001"
+    },
+    "keyVaultAdministratorObjectId": {
+      "value": "00000000-0000-0000-0000-000000000001"
+    },
+    "sqlDatabaseName": {
+      "value": "leaguebrief"
+    },
+    "sqlSkuName": {
+      "value": "GP_S_Gen5_1"
+    },
+    "sqlSkuTier": {
+      "value": "GeneralPurpose"
+    },
+    "sqlSkuFamily": {
+      "value": "Gen5"
+    },
+    "sqlSkuCapacity": {
+      "value": 1
+    },
+    "sqlMinCapacity": {
+      "value": 1
+    },
+    "sqlAutoPauseDelayMinutes": {
+      "value": 60
+    },
+    "sqlMaxSizeBytes": {
+      "value": 34359738368
+    },
+    "sqlAllowAzureServices": {
+      "value": true
+    },
+    "sqlAzureAdOnlyAuthentication": {
+      "value": false
+    },
+    "logAnalyticsRetentionInDays": {
+      "value": 30
+    },
+    "keyVaultEnablePurgeProtection": {
+      "value": false
+    },
+    "sqlAdminPasswordSecretName": {
+      "value": "sql-admin-password"
+    },
+    "googleClientIdSecretName": {
+      "value": "google-client-id"
+    },
+    "googleClientSecretSecretName": {
+      "value": "google-client-secret"
+    },
+    "microsoftClientIdSecretName": {
+      "value": "microsoft-client-id"
+    },
+    "microsoftClientSecretSecretName": {
+      "value": "microsoft-client-secret"
+    },
+    "microsoftTenantIdSecretName": {
+      "value": "microsoft-tenant-id"
+    }
+  }
+}
