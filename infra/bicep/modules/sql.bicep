@@ -42,7 +42,7 @@ resource sqlServerAadAdmin 'Microsoft.Sql/servers/administrators@2024-11-01-prev
   }
 }
 
-resource sqlAadOnlyAuth 'Microsoft.Sql/servers/azureADOnlyAuthentications@2024-11-01-preview' = {
+resource sqlAadOnlyAuth 'Microsoft.Sql/servers/azureADOnlyAuthentications@2024-11-01-preview' = if (azureAdOnlyAuthentication) {
   parent: sqlServer
   name: 'Default'
   properties: {

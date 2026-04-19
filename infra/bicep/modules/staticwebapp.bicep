@@ -6,7 +6,7 @@ param stagingEnvironmentPolicy string = 'Enabled'
 param tags object = {}
 param appSettings object = {}
 
-resource staticSite 'Microsoft.Web/staticSites@2024-11-01' = {
+resource staticSite 'Microsoft.Web/staticSites@2023-12-01' = {
   name: name
   location: location
   identity: {
@@ -18,13 +18,11 @@ resource staticSite 'Microsoft.Web/staticSites@2024-11-01' = {
   }
   properties: {
     allowConfigFileUpdates: true
-    publicNetworkAccess: publicNetworkAccess
-    stagingEnvironmentPolicy: stagingEnvironmentPolicy
   }
   tags: tags
 }
 
-resource appSettingsConfig 'Microsoft.Web/staticSites/config@2024-11-01' = {
+resource appSettingsConfig 'Microsoft.Web/staticSites/config@2023-12-01' = {
   parent: staticSite
   name: 'appsettings'
   properties: appSettings

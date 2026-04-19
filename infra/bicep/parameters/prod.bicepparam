@@ -2,7 +2,7 @@ using '../main.bicep'
 
 param environmentName = 'prod'
 param location = 'westus3'
-param namePrefix = 'lb'
+param namePrefix = 'lbr'
 param tags = {
   environment: 'prod'
   project: 'LeagueBrief'
@@ -14,15 +14,19 @@ param manageDnsInAzure = false
 param dnsZoneResourceId = ''
 
 param frontDoorWafMode = 'Prevention'
+param frontDoorDefaultRuleSetVersion = '1.1'
+param frontDoorBotManagerVersion = '1.0'
 param frontDoorApiRateLimitThreshold = 600
 param frontDoorApiRateLimitDurationMinutes = 1
 
 param staticWebAppSku = 'Standard'
+param staticWebAppLocation = 'eastus2'
 param staticWebAppPublicNetworkAccess = 'Enabled'
 param staticWebAppStagingPolicy = 'Disabled'
 
 param functionRuntimeName = 'python'
 param functionRuntimeVersion = '3.12'
+param functionAppLocation = 'westus3'
 param functionInstanceMemoryMb = 2048
 param functionMaximumInstanceCount = 50
 param apiHttpPerInstanceConcurrency = 20

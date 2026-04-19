@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.42.1.51946",
-      "templateHash": "843949268052684553"
+      "templateHash": "10896626594111474994"
     }
   },
   "parameters": {
@@ -86,14 +86,14 @@
     },
     "frontDoorDefaultRuleSetVersion": {
       "type": "string",
-      "defaultValue": "2.2",
+      "defaultValue": "1.1",
       "metadata": {
         "description": "Managed rule set version for Front Door WAF."
       }
     },
     "frontDoorBotManagerVersion": {
       "type": "string",
-      "defaultValue": "1.1",
+      "defaultValue": "1.0",
       "metadata": {
         "description": "Bot Manager rule set version for Front Door WAF."
       }
@@ -122,6 +122,13 @@
       ],
       "metadata": {
         "description": "Static Web Apps SKU."
+      }
+    },
+    "staticWebAppLocation": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Azure region for the Static Web App. This may need to differ from the main workload region."
       }
     },
     "staticWebAppPublicNetworkAccess": {
@@ -158,6 +165,13 @@
       "defaultValue": "3.12",
       "metadata": {
         "description": "Function runtime version for both Function Apps."
+      }
+    },
+    "functionAppLocation": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Azure region for Function Apps and Flex Consumption plans."
       }
     },
     "functionInstanceMemoryMb": {
@@ -410,7 +424,11 @@
     "frontDoorEndpointName": "[format('{0}-{1}-edge', parameters('namePrefix'), parameters('environmentName'))]",
     "frontDoorWafPolicyName": "[format('{0}-{1}-waf', parameters('namePrefix'), parameters('environmentName'))]",
     "publicBaseUrl": "[if(and(parameters('enableCustomDomain'), not(empty(parameters('publicHostName')))), format('https://{0}', parameters('publicHostName')), '')]",
-    "apiFunctionDefaultHostName": "[format('{0}.azurewebsites.net', variables('apiFunctionAppName'))]"
+    "apiFunctionDefaultHostName": "[format('{0}.azurewebsites.net', variables('apiFunctionAppName'))]",
+    "functionDeploymentContainerNames": [
+      "api-packages",
+      "worker-packages"
+    ]
   },
   "resources": [
     {
@@ -424,7 +442,7 @@
         "mode": "Incremental",
         "parameters": {
           "blobContainerNames": {
-            "value": "[parameters('storageBlobContainerNames')]"
+            "value": "[concat(parameters('storageBlobContainerNames'), variables('functionDeploymentContainerNames'))]"
           },
           "location": {
             "value": "[parameters('location')]"
@@ -873,7 +891,7 @@
             }
           },
           "location": {
-            "value": "[parameters('location')]"
+            "value": "[parameters('staticWebAppLocation')]"
           },
           "name": {
             "value": "[variables('staticWebAppName')]"
@@ -898,7 +916,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "14366488976889041475"
+              "templateHash": "1725646791989525828"
             }
           },
           "parameters": {
@@ -932,7 +950,7 @@
           "resources": [
             {
               "type": "Microsoft.Web/staticSites",
-              "apiVersion": "2024-11-01",
+              "apiVersion": "2023-12-01",
               "name": "[parameters('name')]",
               "location": "[parameters('location')]",
               "identity": {
@@ -943,15 +961,13 @@
                 "tier": "[parameters('skuName')]"
               },
               "properties": {
-                "allowConfigFileUpdates": true,
-                "publicNetworkAccess": "[parameters('publicNetworkAccess')]",
-                "stagingEnvironmentPolicy": "[parameters('stagingEnvironmentPolicy')]"
+                "allowConfigFileUpdates": true
               },
               "tags": "[parameters('tags')]"
             },
             {
               "type": "Microsoft.Web/staticSites/config",
-              "apiVersion": "2024-11-01",
+              "apiVersion": "2023-12-01",
               "name": "[format('{0}/{1}', parameters('name'), 'appsettings')]",
               "properties": "[parameters('appSettings')]",
               "dependsOn": [
@@ -962,7 +978,7 @@
           "outputs": {
             "defaultHostname": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.Web/staticSites', parameters('name')), '2024-11-01').defaultHostname]"
+              "value": "[reference(resourceId('Microsoft.Web/staticSites', parameters('name')), '2023-12-01').defaultHostname]"
             },
             "id": {
               "type": "string",
@@ -974,7 +990,7 @@
             },
             "principalId": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.Web/staticSites', parameters('name')), '2024-11-01', 'full').identity.principalId]"
+              "value": "[reference(resourceId('Microsoft.Web/staticSites', parameters('name')), '2023-12-01', 'full').identity.principalId]"
             }
           }
         }
@@ -1055,7 +1071,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "10154295403920321583"
+              "templateHash": "12316368867884701971"
             }
           },
           "parameters": {
@@ -1154,6 +1170,7 @@
               ]
             },
             {
+              "condition": "[parameters('azureAdOnlyAuthentication')]",
               "type": "Microsoft.Sql/servers/azureADOnlyAuthentications",
               "apiVersion": "2024-11-01-preview",
               "name": "[format('{0}/{1}', parameters('name'), 'Default')]",
@@ -1244,8 +1261,11 @@
           "instanceMemoryMb": {
             "value": "[parameters('functionInstanceMemoryMb')]"
           },
+          "deploymentStorageContainerUrl": {
+            "value": "[format('{0}{1}', reference(resourceId('Microsoft.Resources/deployments', 'storage'), '2025-04-01').outputs.blobEndpoint.value, variables('functionDeploymentContainerNames')[0])]"
+          },
           "location": {
-            "value": "[parameters('location')]"
+            "value": "[parameters('functionAppLocation')]"
           },
           "maximumInstanceCount": {
             "value": "[parameters('functionMaximumInstanceCount')]"
@@ -1273,7 +1293,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "17275340771031183965"
+              "templateHash": "2731304369837661417"
             }
           },
           "parameters": {
@@ -1317,6 +1337,13 @@
             "appSettings": {
               "type": "object",
               "defaultValue": {}
+            },
+            "deploymentStorageContainerUrl": {
+              "type": "string"
+            },
+            "deploymentStorageConnectionStringSettingName": {
+              "type": "string",
+              "defaultValue": "AzureWebJobsStorage"
             }
           },
           "variables": {
@@ -1353,6 +1380,16 @@
                 "publicNetworkAccess": "Enabled",
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('planName'))]",
                 "functionAppConfig": {
+                  "deployment": {
+                    "storage": {
+                      "authentication": {
+                        "storageAccountConnectionStringName": "[parameters('deploymentStorageConnectionStringSettingName')]",
+                        "type": "StorageAccountConnectionString"
+                      },
+                      "type": "blobContainer",
+                      "value": "[parameters('deploymentStorageContainerUrl')]"
+                    }
+                  },
                   "runtime": {
                     "name": "[parameters('runtimeName')]",
                     "version": "[parameters('runtimeVersion')]"
@@ -1434,8 +1471,11 @@
           "instanceMemoryMb": {
             "value": "[parameters('functionInstanceMemoryMb')]"
           },
+          "deploymentStorageContainerUrl": {
+            "value": "[format('{0}{1}', reference(resourceId('Microsoft.Resources/deployments', 'storage'), '2025-04-01').outputs.blobEndpoint.value, variables('functionDeploymentContainerNames')[1])]"
+          },
           "location": {
-            "value": "[parameters('location')]"
+            "value": "[parameters('functionAppLocation')]"
           },
           "maximumInstanceCount": {
             "value": "[parameters('functionMaximumInstanceCount')]"
@@ -1463,7 +1503,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "17275340771031183965"
+              "templateHash": "2731304369837661417"
             }
           },
           "parameters": {
@@ -1507,6 +1547,13 @@
             "appSettings": {
               "type": "object",
               "defaultValue": {}
+            },
+            "deploymentStorageContainerUrl": {
+              "type": "string"
+            },
+            "deploymentStorageConnectionStringSettingName": {
+              "type": "string",
+              "defaultValue": "AzureWebJobsStorage"
             }
           },
           "variables": {
@@ -1543,6 +1590,16 @@
                 "publicNetworkAccess": "Enabled",
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('planName'))]",
                 "functionAppConfig": {
+                  "deployment": {
+                    "storage": {
+                      "authentication": {
+                        "storageAccountConnectionStringName": "[parameters('deploymentStorageConnectionStringSettingName')]",
+                        "type": "StorageAccountConnectionString"
+                      },
+                      "type": "blobContainer",
+                      "value": "[parameters('deploymentStorageContainerUrl')]"
+                    }
+                  },
                   "runtime": {
                     "name": "[parameters('runtimeName')]",
                     "version": "[parameters('runtimeVersion')]"
@@ -1842,7 +1899,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "3744078147479839061"
+              "templateHash": "16693760496484639176"
             }
           },
           "parameters": {
@@ -2035,53 +2092,28 @@
             },
             {
               "type": "Microsoft.Network/FrontDoorWebApplicationFirewallPolicies",
-              "apiVersion": "2025-11-01",
+              "apiVersion": "2020-11-01",
               "name": "[parameters('wafPolicyName')]",
               "location": "[parameters('location')]",
+              "sku": {
+                "name": "[parameters('skuName')]"
+              },
               "properties": {
-                "customRules": {
-                  "rules": [
-                    {
-                      "action": "Block",
-                      "enabledState": "Enabled",
-                      "matchConditions": [
-                        {
-                          "matchValue": [
-                            "/api/"
-                          ],
-                          "matchVariable": "RequestUri",
-                          "negateCondition": false,
-                          "operator": "BeginsWith",
-                          "transforms": []
-                        }
-                      ],
-                      "name": "api-rate-limit",
-                      "priority": 100,
-                      "rateLimitDurationInMinutes": "[parameters('apiRateLimitDurationMinutes')]",
-                      "rateLimitThreshold": "[parameters('apiRateLimitThreshold')]",
-                      "ruleType": "RateLimitRule"
-                    }
-                  ]
-                },
                 "managedRules": {
                   "managedRuleSets": [
                     {
-                      "ruleSetAction": "Block",
                       "ruleSetType": "Microsoft_DefaultRuleSet",
                       "ruleSetVersion": "[parameters('defaultRuleSetVersion')]"
                     },
                     {
-                      "ruleSetAction": "Block",
                       "ruleSetType": "Microsoft_BotManagerRuleSet",
                       "ruleSetVersion": "[parameters('botManagerVersion')]"
                     }
                   ]
                 },
                 "policySettings": {
-                  "customBlockResponseStatusCode": 403,
                   "enabledState": "Enabled",
-                  "mode": "[parameters('wafMode')]",
-                  "requestBodyCheck": "Enabled"
+                  "mode": "[parameters('wafMode')]"
                 }
               },
               "tags": "[parameters('tags')]"
@@ -2094,6 +2126,7 @@
               "dependsOn": [
                 "[resourceId('Microsoft.Cdn/profiles/customDomains', parameters('profileName'), 'primary-domain')]",
                 "[resourceId('Microsoft.Cdn/profiles/afdEndpoints', parameters('profileName'), parameters('endpointName'))]",
+                "[resourceId('Microsoft.Cdn/profiles/originGroups/origins', parameters('profileName'), 'web-origins', 'static-web-app')]",
                 "[resourceId('Microsoft.Cdn/profiles/originGroups', parameters('profileName'), 'web-origins')]"
               ]
             },
@@ -2103,6 +2136,7 @@
               "name": "[format('{0}/{1}/{2}', parameters('profileName'), parameters('endpointName'), 'api-route')]",
               "properties": "[union(createObject('enabledState', 'Enabled', 'forwardingProtocol', 'MatchRequest', 'httpsRedirect', 'Enabled', 'linkToDefaultDomain', 'Enabled', 'originGroup', createObject('id', resourceId('Microsoft.Cdn/profiles/originGroups', parameters('profileName'), 'api-origins')), 'patternsToMatch', createArray('/api/*'), 'supportedProtocols', createArray('Http', 'Https')), if(and(parameters('enableCustomDomain'), not(empty(parameters('publicHostName')))), createObject('customDomains', variables('routeCustomDomains')), createObject()))]",
               "dependsOn": [
+                "[resourceId('Microsoft.Cdn/profiles/originGroups/origins', parameters('profileName'), 'api-origins', 'api-function-app')]",
                 "[resourceId('Microsoft.Cdn/profiles/originGroups', parameters('profileName'), 'api-origins')]",
                 "[resourceId('Microsoft.Cdn/profiles/customDomains', parameters('profileName'), 'primary-domain')]",
                 "[resourceId('Microsoft.Cdn/profiles/afdEndpoints', parameters('profileName'), parameters('endpointName'))]"

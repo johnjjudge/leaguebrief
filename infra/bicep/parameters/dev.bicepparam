@@ -14,15 +14,19 @@ param manageDnsInAzure = false
 param dnsZoneResourceId = ''
 
 param frontDoorWafMode = 'Detection'
+param frontDoorDefaultRuleSetVersion = '1.1'
+param frontDoorBotManagerVersion = '1.0'
 param frontDoorApiRateLimitThreshold = 600
 param frontDoorApiRateLimitDurationMinutes = 1
 
 param staticWebAppSku = 'Standard'
+param staticWebAppLocation = 'westus2'
 param staticWebAppPublicNetworkAccess = 'Enabled'
 param staticWebAppStagingPolicy = 'Enabled'
 
 param functionRuntimeName = 'python'
 param functionRuntimeVersion = '3.12'
+param functionAppLocation = 'westus3'
 param functionInstanceMemoryMb = 2048
 param functionMaximumInstanceCount = 50
 param apiHttpPerInstanceConcurrency = 20

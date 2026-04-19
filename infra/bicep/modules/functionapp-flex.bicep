@@ -9,6 +9,8 @@ param httpPerInstanceConcurrency int = 20
 param alwaysReadyHttpInstances int = 0
 param tags object = {}
 param appSettings object = {}
+param deploymentStorageContainerUrl string
+param deploymentStorageConnectionStringSettingName string = 'AzureWebJobsStorage'
 
 resource plan 'Microsoft.Web/serverfarms@2024-11-01' = {
   name: planName
@@ -63,6 +65,16 @@ resource functionApp 'Microsoft.Web/sites@2024-11-01' = {
     publicNetworkAccess: 'Enabled'
     serverFarmId: plan.id
     functionAppConfig: {
+      deployment: {
+        storage: {
+          authentication: {
+            storageAccountConnectionStringName: deploymentStorageConnectionStringSettingName
+            type: 'StorageAccountConnectionString'
+          }
+          type: 'blobContainer'
+          value: deploymentStorageContainerUrl
+        }
+      }
       runtime: {
         name: runtimeName
         version: runtimeVersion

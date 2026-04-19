@@ -1,0 +1,10 @@
+.DS_Store
+*.zip
+
+apps/api/.venv/
+apps/worker/.venv/
+apps/web/node_modules/
+apps/web/dist/
+apps/web/build/
+
+infra/.artifacts/

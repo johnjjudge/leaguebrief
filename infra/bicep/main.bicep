@@ -38,10 +38,10 @@ param frontDoorSku string = 'Premium_AzureFrontDoor'
 param frontDoorWafMode string = 'Detection'
 
 @description('Managed rule set version for Front Door WAF.')
-param frontDoorDefaultRuleSetVersion string = '2.2'
+param frontDoorDefaultRuleSetVersion string = '1.1'
 
 @description('Bot Manager rule set version for Front Door WAF.')
-param frontDoorBotManagerVersion string = '1.1'
+param frontDoorBotManagerVersion string = '1.0'
 
 @minValue(1)
 @description('Per-client request threshold for the /api/* rate-limit WAF rule.')
@@ -56,6 +56,9 @@ param frontDoorApiRateLimitDurationMinutes int = 1
 ])
 @description('Static Web Apps SKU.')
 param staticWebAppSku string = 'Standard'
+
+@description('Azure region for the Static Web App. This may need to differ from the main workload region.')
+param staticWebAppLocation string = 'westus2'
 
 @allowed([
   'Enabled'
@@ -76,6 +79,9 @@ param functionRuntimeName string = 'python'
 
 @description('Function runtime version for both Function Apps.')
 param functionRuntimeVersion string = '3.12'
+
+@description('Azure region for Function Apps and Flex Consumption plans.')
+param functionAppLocation string = resourceGroup().location
 
 @minValue(512)
 @description('Flex Consumption memory size per instance, in MB.')
@@ -213,11 +219,15 @@ var frontDoorEndpointName = '${namePrefix}-${environmentName}-edge'
 var frontDoorWafPolicyName = '${namePrefix}-${environmentName}-waf'
 var publicBaseUrl = enableCustomDomain && !empty(publicHostName) ? 'https://${publicHostName}' : ''
 var apiFunctionDefaultHostName = '${apiFunctionAppName}.azurewebsites.net'
+var functionDeploymentContainerNames = [
+  'api-packages'
+  'worker-packages'
+]
 
 module storage './modules/storage.bicep' = {
   name: 'storage'
   params: {
-    blobContainerNames: storageBlobContainerNames
+    blobContainerNames: concat(storageBlobContainerNames, functionDeploymentContainerNames)
     location: location
     name: storageAccountName
     queueNames: storageQueueNames
@@ -274,7 +284,7 @@ module staticWebApp './modules/staticwebapp.bicep' = {
   name: 'staticWebApp'
   params: {
     appSettings: staticWebAppSettings
-    location: location
+    location: staticWebAppLocation
     name: staticWebAppName
     publicNetworkAccess: staticWebAppPublicNetworkAccess
     skuName: staticWebAppSku
@@ -344,7 +354,8 @@ module apiFunction './modules/functionapp-flex.bicep' = {
     })
     httpPerInstanceConcurrency: apiHttpPerInstanceConcurrency
     instanceMemoryMb: functionInstanceMemoryMb
-    location: location
+    deploymentStorageContainerUrl: '${storage.outputs.blobEndpoint}${functionDeploymentContainerNames[0]}'
+    location: functionAppLocation
     maximumInstanceCount: functionMaximumInstanceCount
     name: apiFunctionAppName
     planName: apiFunctionPlanName
@@ -364,7 +375,8 @@ module workerFunction './modules/functionapp-flex.bicep' = {
     })
     httpPerInstanceConcurrency: 1
     instanceMemoryMb: functionInstanceMemoryMb
-    location: location
+    deploymentStorageContainerUrl: '${storage.outputs.blobEndpoint}${functionDeploymentContainerNames[1]}'
+    location: functionAppLocation
     maximumInstanceCount: functionMaximumInstanceCount
     name: workerFunctionAppName
     planName: workerFunctionPlanName

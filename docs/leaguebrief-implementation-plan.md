@@ -123,6 +123,7 @@ leaguebrief/
   apps/
     web/
     api/
+    worker/
   packages/
     domain/
     analytics-core/
@@ -134,16 +135,14 @@ leaguebrief/
       modules/
       parameters/
     scripts/
+      _common.sh
       deploy-infra.sh
-      deploy-infra.ps1
       deploy-app-web.sh
-      deploy-app-web.ps1
       deploy-app-api.sh
-      deploy-app-api.ps1
+      deploy-app-worker.sh
       package-api.sh
-      package-api.ps1
+      package-worker.sh
       bootstrap-env.sh
-      bootstrap-env.ps1
   .github/
     workflows/
 ```
@@ -298,14 +297,15 @@ infra/
   bicep/
     main.bicep
     modules/
-      frontdoor.bicep
+      frontdoor-premium.bicep
+      log-analytics.bicep
+      app-insights.bicep
       staticwebapp.bicep
-      functionapp.bicep
+      functionapp-flex.bicep
       storage.bicep
       sql.bicep
       keyvault.bicep
-      appinsights.bicep
-      identity.bicep
+      role-assignments.bicep
     parameters/
       dev.bicepparam
       prod.bicepparam
@@ -313,15 +313,17 @@ infra/
 
 ### 9.5 Deployment script expectations
 
-Create both Bash and PowerShell versions where practical.
+Create Bash versions for the current macOS-first workflow.
 
 #### Required scripts
 
-- `bootstrap-env.sh` / `bootstrap-env.ps1`
-- `deploy-infra.sh` / `deploy-infra.ps1`
-- `package-api.sh` / `package-api.ps1`
-- `deploy-app-api.sh` / `deploy-app-api.ps1`
-- `deploy-app-web.sh` / `deploy-app-web.ps1`
+- `bootstrap-env.sh`
+- `deploy-infra.sh`
+- `package-api.sh`
+- `package-worker.sh`
+- `deploy-app-api.sh`
+- `deploy-app-worker.sh`
+- `deploy-app-web.sh`
 
 These scripts should support repeatable deployment of infrastructure and application code into your Azure resource group.
 
@@ -331,9 +333,9 @@ Infrastructure phase is complete when:
 
 - Bicep validates successfully
 - Azure resources deploy into the resource group
-- outputs are available for app configuration
+- outputs are available live from the Azure deployment for app configuration
 - deployment scripts run end-to-end
-- a placeholder frontend and backend can be deployed to the provisioned environment
+- a placeholder frontend, API, and worker shell can be deployed to the provisioned environment
 
 ### 9.7 Codex task prompt for Bicep
 
@@ -362,14 +364,15 @@ Use /plan first.
 
 Create deployment scripts for LeagueBrief infrastructure and code.
 Requirements:
-- add Bash and PowerShell scripts under infra/scripts
-- include bootstrap-env, deploy-infra, package-api, deploy-app-api, and deploy-app-web
-- scripts should consume Bicep outputs or config artifacts where appropriate
+- add Bash scripts under infra/scripts
+- include bootstrap-env, deploy-infra, package-api, package-worker, deploy-app-api, deploy-app-worker, and deploy-app-web
+- scripts should consume live Azure deployment outputs where appropriate
 - scripts should fail fast on missing prerequisites
 Acceptance criteria:
 - scripts are documented
 - scripts are idempotent where practical
 - scripts are safe to run repeatedly in a dev environment
+- deploy-infra should use direct az deployment group create without persisting local deployment metadata or Bicep outputs
 Do not require manual editing inside the scripts for ordinary execution.
 ```
 
@@ -382,7 +385,8 @@ Create minimal frontend and backend apps and prove they deploy to the new Azure 
 
 ### Deliverables
 - React frontend shell
-- Python backend shell
+- Python API shell
+- Python worker shell placeholder
 - health endpoint
 - simple home page
 - deployment validation
@@ -398,11 +402,13 @@ Implement minimal deployable app shells for LeagueBrief.
 Requirements:
 - apps/web: React + TypeScript shell with Home and placeholder routes
 - apps/api: Python API shell with /api/health
+- apps/worker: placeholder Python worker shell aligned with the deployment scripts
 - align environment configuration to the Azure resources provisioned by infra scripts
 Acceptance criteria:
 - frontend builds locally
 - backend starts locally
-- both can be deployed with the existing deployment scripts
+- the API and web app can be deployed with the existing deployment scripts
+- the worker shell structure is ready for the existing worker packaging and deployment scripts
 - document required environment variables
 Do not add auth or database access yet.
 ```

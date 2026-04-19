@@ -122,53 +122,28 @@ resource customDomain 'Microsoft.Cdn/profiles/customDomains@2025-06-01' = if (en
   properties: customDomainProperties
 }
 
-resource wafPolicy 'Microsoft.Network/frontDoorWebApplicationFirewallPolicies@2025-11-01' = {
+resource wafPolicy 'Microsoft.Cdn/cdnWebApplicationFirewallPolicies@2025-06-01' = {
   name: wafPolicyName
   location: location
+  sku: {
+    name: skuName
+  }
   properties: {
-    customRules: {
-      rules: [
-        {
-          action: 'Block'
-          enabledState: 'Enabled'
-          matchConditions: [
-            {
-              matchValue: [
-                '/api/'
-              ]
-              matchVariable: 'RequestUri'
-              negateCondition: false
-              operator: 'BeginsWith'
-              transforms: []
-            }
-          ]
-          name: 'api-rate-limit'
-          priority: 100
-          rateLimitDurationInMinutes: apiRateLimitDurationMinutes
-          rateLimitThreshold: apiRateLimitThreshold
-          ruleType: 'RateLimitRule'
-        }
-      ]
-    }
     managedRules: {
       managedRuleSets: [
         {
-          ruleSetAction: 'Block'
           ruleSetType: 'Microsoft_DefaultRuleSet'
           ruleSetVersion: defaultRuleSetVersion
         }
         {
-          ruleSetAction: 'Block'
           ruleSetType: 'Microsoft_BotManagerRuleSet'
           ruleSetVersion: botManagerVersion
         }
       ]
     }
     policySettings: {
-      customBlockResponseStatusCode: 403
       enabledState: 'Enabled'
       mode: wafMode
-      requestBodyCheck: 'Enabled'
     }
   }
   tags: tags
@@ -193,6 +168,9 @@ var securityPolicyDomains = enableCustomDomain && !empty(publicHostName) ? [
 resource webRoute 'Microsoft.Cdn/profiles/afdEndpoints/routes@2025-06-01' = {
   parent: endpoint
   name: 'web-route'
+  dependsOn: [
+    webOrigin
+  ]
   properties: union({
     enabledState: 'Enabled'
     forwardingProtocol: 'MatchRequest'
@@ -216,6 +194,9 @@ resource webRoute 'Microsoft.Cdn/profiles/afdEndpoints/routes@2025-06-01' = {
 resource apiRoute 'Microsoft.Cdn/profiles/afdEndpoints/routes@2025-06-01' = {
   parent: endpoint
   name: 'api-route'
+  dependsOn: [
+    apiOrigin
+  ]
   properties: union({
     enabledState: 'Enabled'
     forwardingProtocol: 'MatchRequest'

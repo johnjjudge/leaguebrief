@@ -1088,9 +1088,14 @@ leaguebrief/
         services/
         models/
         repositories/
-        workers/
         analytics/
         ingestion/
+        utils/
+    worker/
+      src/
+        jobs/
+        services/
+        adapters/
         utils/
   packages/
     domain/
@@ -1121,6 +1126,7 @@ leaguebrief/
 - `espn-adapter`: external ingestion and parsing
 - `fantasypros-adapter`: CSV/reference data ingestion
 - `api`: HTTP endpoints, orchestration, persistence
+- `worker`: async import and recompute execution
 - `web`: UI only
 
 ---
