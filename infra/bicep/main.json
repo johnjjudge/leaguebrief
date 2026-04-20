@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.42.1.51946",
-      "templateHash": "10896626594111474994"
+      "templateHash": "17771945332111687174"
     }
   },
   "parameters": {
@@ -73,6 +73,13 @@
         "description": "Front Door SKU. Premium is required for managed WAF rules and bot protection."
       }
     },
+    "enableFrontDoorWaf": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Whether Front Door should create and attach a WAF policy. Disabled by default so deployments are not blocked by subscription feature approval."
+      }
+    },
     "frontDoorWafMode": {
       "type": "string",
       "defaultValue": "Detection",
@@ -86,14 +93,14 @@
     },
     "frontDoorDefaultRuleSetVersion": {
       "type": "string",
-      "defaultValue": "1.1",
+      "defaultValue": "2.2",
       "metadata": {
         "description": "Managed rule set version for Front Door WAF."
       }
     },
     "frontDoorBotManagerVersion": {
       "type": "string",
-      "defaultValue": "1.0",
+      "defaultValue": "1.1",
       "metadata": {
         "description": "Bot Manager rule set version for Front Door WAF."
       }
@@ -1858,6 +1865,9 @@
           "enableCustomDomain": {
             "value": "[parameters('enableCustomDomain')]"
           },
+          "enableWaf": {
+            "value": "[parameters('enableFrontDoorWaf')]"
+          },
           "endpointName": {
             "value": "[variables('frontDoorEndpointName')]"
           },
@@ -1899,7 +1909,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "16693760496484639176"
+              "templateHash": "3623395569146454473"
             }
           },
           "parameters": {
@@ -1931,6 +1941,10 @@
               "type": "string"
             },
             "enableCustomDomain": {
+              "type": "bool",
+              "defaultValue": false
+            },
+            "enableWaf": {
               "type": "bool",
               "defaultValue": false
             },
@@ -2091,6 +2105,7 @@
               ]
             },
             {
+              "condition": "[parameters('enableWaf')]",
               "type": "Microsoft.Network/FrontDoorWebApplicationFirewallPolicies",
               "apiVersion": "2020-11-01",
               "name": "[parameters('wafPolicyName')]",
@@ -2143,6 +2158,7 @@
               ]
             },
             {
+              "condition": "[parameters('enableWaf')]",
               "type": "Microsoft.Cdn/profiles/securityPolicies",
               "apiVersion": "2025-06-01",
               "name": "[format('{0}/{1}', parameters('profileName'), 'waf-security-policy')]",

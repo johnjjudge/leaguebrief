@@ -18,7 +18,7 @@
       }
     },
     "enableCustomDomain": {
-      "value": false
+      "value": true
     },
     "publicHostName": {
       "value": "www.leaguebrief.com"
@@ -29,14 +29,17 @@
     "dnsZoneResourceId": {
       "value": ""
     },
+    "enableFrontDoorWaf": {
+      "value": false
+    },
     "frontDoorWafMode": {
       "value": "Prevention"
     },
     "frontDoorDefaultRuleSetVersion": {
-      "value": "1.1"
+      "value": "2.2"
     },
     "frontDoorBotManagerVersion": {
-      "value": "1.0"
+      "value": "1.1"
     },
     "frontDoorApiRateLimitThreshold": {
       "value": 600

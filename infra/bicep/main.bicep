@@ -30,6 +30,9 @@ param dnsZoneResourceId string = ''
 @description('Front Door SKU. Premium is required for managed WAF rules and bot protection.')
 param frontDoorSku string = 'Premium_AzureFrontDoor'
 
+@description('Whether Front Door should create and attach a WAF policy. Disabled by default so deployments are not blocked by subscription feature approval.')
+param enableFrontDoorWaf bool = false
+
 @allowed([
   'Detection'
   'Prevention'
@@ -38,10 +41,10 @@ param frontDoorSku string = 'Premium_AzureFrontDoor'
 param frontDoorWafMode string = 'Detection'
 
 @description('Managed rule set version for Front Door WAF.')
-param frontDoorDefaultRuleSetVersion string = '1.1'
+param frontDoorDefaultRuleSetVersion string = '2.2'
 
 @description('Bot Manager rule set version for Front Door WAF.')
-param frontDoorBotManagerVersion string = '1.0'
+param frontDoorBotManagerVersion string = '1.1'
 
 @minValue(1)
 @description('Per-client request threshold for the /api/* rate-limit WAF rule.')
@@ -411,6 +414,7 @@ module frontDoor './modules/frontdoor-premium.bicep' = {
     defaultRuleSetVersion: frontDoorDefaultRuleSetVersion
     dnsZoneResourceId: dnsZoneResourceId
     enableCustomDomain: enableCustomDomain
+    enableWaf: enableFrontDoorWaf
     endpointName: frontDoorEndpointName
     location: 'global'
     logAnalyticsWorkspaceResourceId: logAnalytics.outputs.workspaceResourceId

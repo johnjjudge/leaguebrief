@@ -8,14 +8,15 @@ param tags = {
   project: 'LeagueBrief'
 }
 
-param enableCustomDomain = false
+param enableCustomDomain = true
 param publicHostName = 'www.leaguebrief.com'
 param manageDnsInAzure = false
 param dnsZoneResourceId = ''
 
+param enableFrontDoorWaf = false
 param frontDoorWafMode = 'Prevention'
-param frontDoorDefaultRuleSetVersion = '1.1'
-param frontDoorBotManagerVersion = '1.0'
+param frontDoorDefaultRuleSetVersion = '2.2'
+param frontDoorBotManagerVersion = '1.1'
 param frontDoorApiRateLimitThreshold = 600
 param frontDoorApiRateLimitDurationMinutes = 1
 

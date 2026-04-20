@@ -1,0 +1,16 @@
+{
+  "networking": {
+    "allowedIpRanges": [
+      "AzureFrontDoor.Backend"
+    ]
+  },
+  "forwardingGateway": {
+    "requiredHeaders": {
+      "X-Azure-FDID": "b3ff2399-d615-40c3-935c-7f77deaffe64"
+    },
+    "allowedForwardedHosts": [
+      "lbr-prod-edge-f9fzdsa7budefnhg.z01.azurefd.net",
+      "www.leaguebrief.com"
+    ]
+  }
+}

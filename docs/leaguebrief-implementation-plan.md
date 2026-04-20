@@ -387,6 +387,7 @@ Create minimal frontend and backend apps and prove they deploy to the new Azure 
 - React frontend shell
 - Python API shell
 - Python worker shell placeholder
+- `apps/web/staticwebapp.config.json` aligned to Azure Front Door forwarding requirements for the production public host
 - health endpoint
 - simple home page
 - deployment validation
@@ -409,6 +410,7 @@ Acceptance criteria:
 - backend starts locally
 - the API and web app can be deployed with the existing deployment scripts
 - the worker shell structure is ready for the existing worker packaging and deployment scripts
+- the frontend shell includes Static Web Apps forwarding-gateway configuration for the Front Door hostname, the production custom domain, and the expected `X-Azure-FDID` header
 - document required environment variables
 Do not add auth or database access yet.
 ```

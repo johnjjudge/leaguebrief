@@ -12,11 +12,11 @@ This folder defines the Azure MVP infrastructure for LeagueBrief at resource-gro
 - `modules/functionapp-flex.bicep`: reusable Azure Functions Flex Consumption app module.
 - `modules/sql.bicep`: Azure SQL logical server, Entra admin, firewall rule, and serverless database.
 - `modules/role-assignments.bicep`: Storage RBAC and Key Vault access-policy wiring for app identities.
-- `modules/frontdoor-premium.bicep`: Front Door Premium profile, endpoint, origins, routes, WAF, and diagnostics.
+- `modules/frontdoor-premium.bicep`: Front Door Premium profile, endpoint, origins, routes, optional WAF, and diagnostics.
 
 ## Parameter files
-- `parameters/dev.bicepparam`: development defaults. Custom domain is disabled by default.
-- `parameters/prod.bicepparam`: production defaults. WAF mode is `Prevention`, purge protection is enabled, and custom domain remains opt-in until DNS is ready.
+- `parameters/dev.bicepparam`: development defaults. Custom domain and Front Door WAF are disabled by default.
+- `parameters/prod.bicepparam`: production defaults. Front Door custom-domain onboarding is enabled for `www.leaguebrief.com`, purge protection is enabled, and Front Door WAF is disabled by default until the subscription feature dependency is cleared.
 
 ## Important inputs
 - `sqlAdministratorPassword` is intentionally blank in the checked-in parameter files and should be overridden at deploy time.

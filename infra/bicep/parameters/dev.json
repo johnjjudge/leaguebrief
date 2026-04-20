@@ -29,8 +29,17 @@
     "dnsZoneResourceId": {
       "value": ""
     },
+    "enableFrontDoorWaf": {
+      "value": false
+    },
     "frontDoorWafMode": {
       "value": "Detection"
+    },
+    "frontDoorDefaultRuleSetVersion": {
+      "value": "2.2"
+    },
+    "frontDoorBotManagerVersion": {
+      "value": "1.1"
     },
     "frontDoorApiRateLimitThreshold": {
       "value": 600
@@ -40,6 +49,9 @@
     },
     "staticWebAppSku": {
       "value": "Standard"
+    },
+    "staticWebAppLocation": {
+      "value": "westus2"
     },
     "staticWebAppPublicNetworkAccess": {
       "value": "Enabled"
@@ -52,6 +64,9 @@
     },
     "functionRuntimeVersion": {
       "value": "3.12"
+    },
+    "functionAppLocation": {
+      "value": "westus3"
     },
     "functionInstanceMemoryMb": {
       "value": 2048
@@ -88,13 +103,16 @@
       "value": ""
     },
     "sqlEntraAdminLogin": {
-      "value": "dev-admin@contoso.com"
+      "value": "judgejohn17_icloud.com#EXT#@judgejohn17icloud.onmicrosoft.com"
     },
     "sqlEntraAdminObjectId": {
-      "value": "00000000-0000-0000-0000-000000000001"
+      "value": "9ab46456-e7dd-45fe-a9da-e7d8773a3b8c"
     },
     "keyVaultAdministratorObjectId": {
-      "value": "00000000-0000-0000-0000-000000000001"
+      "value": "9ab46456-e7dd-45fe-a9da-e7d8773a3b8c"
+    },
+    "tenantId": {
+      "value": "55ac6c0f-19b1-412e-b19e-9ab419c99a7c"
     },
     "sqlDatabaseName": {
       "value": "leaguebrief"

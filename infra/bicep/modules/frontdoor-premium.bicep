@@ -7,6 +7,7 @@ param tags object = {}
 param webOriginHostName string
 param apiOriginHostName string
 param enableCustomDomain bool = false
+param enableWaf bool = false
 param publicHostName string = ''
 param manageDnsInAzure bool = false
 param dnsZoneResourceId string = ''
@@ -122,7 +123,7 @@ resource customDomain 'Microsoft.Cdn/profiles/customDomains@2025-06-01' = if (en
   properties: customDomainProperties
 }
 
-resource wafPolicy 'Microsoft.Cdn/cdnWebApplicationFirewallPolicies@2025-06-01' = {
+resource wafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@2020-11-01' = if (enableWaf) {
   name: wafPolicyName
   location: location
   sku: {
@@ -217,7 +218,7 @@ resource apiRoute 'Microsoft.Cdn/profiles/afdEndpoints/routes@2025-06-01' = {
   } : {})
 }
 
-resource securityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2025-06-01' = {
+resource securityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2025-06-01' = if (enableWaf) {
   parent: profile
   name: 'waf-security-policy'
   properties: {
