@@ -7,12 +7,13 @@ param instanceMemoryMb int = 2048
 param maximumInstanceCount int = 50
 param httpPerInstanceConcurrency int = 20
 param alwaysReadyHttpInstances int = 0
+param managePlan bool = true
 param tags object = {}
 param appSettings object = {}
 param deploymentStorageContainerUrl string
 param deploymentStorageConnectionStringSettingName string = 'AzureWebJobsStorage'
 
-resource plan 'Microsoft.Web/serverfarms@2024-11-01' = {
+resource plan 'Microsoft.Web/serverfarms@2024-11-01' = if (managePlan) {
   name: planName
   location: location
   kind: 'functionapp'
@@ -25,6 +26,10 @@ resource plan 'Microsoft.Web/serverfarms@2024-11-01' = {
     reserved: true
   }
   tags: tags
+}
+
+resource existingPlan 'Microsoft.Web/serverfarms@2024-11-01' existing = if (!managePlan) {
+  name: planName
 }
 
 var effectiveScaleAndConcurrency = alwaysReadyHttpInstances > 0
@@ -63,7 +68,7 @@ resource functionApp 'Microsoft.Web/sites@2024-11-01' = {
   properties: {
     httpsOnly: true
     publicNetworkAccess: 'Enabled'
-    serverFarmId: plan.id
+    serverFarmId: managePlan ? plan.id : existingPlan.id
     functionAppConfig: {
       deployment: {
         storage: {
@@ -98,4 +103,4 @@ output defaultHostName string = functionApp.properties.defaultHostName
 output id string = functionApp.id
 output name string = functionApp.name
 output principalId string = functionApp.identity.principalId
-output planId string = plan.id
+output planId string = managePlan ? plan.id : existingPlan.id

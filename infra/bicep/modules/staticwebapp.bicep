@@ -1,8 +1,6 @@
 param name string
 param location string
 param skuName string = 'Standard'
-param publicNetworkAccess string = 'Enabled'
-param stagingEnvironmentPolicy string = 'Enabled'
 param tags object = {}
 param appSettings object = {}
 

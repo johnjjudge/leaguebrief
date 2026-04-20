@@ -53,12 +53,6 @@
     "staticWebAppLocation": {
       "value": "westus2"
     },
-    "staticWebAppPublicNetworkAccess": {
-      "value": "Enabled"
-    },
-    "staticWebAppStagingPolicy": {
-      "value": "Enabled"
-    },
     "functionRuntimeName": {
       "value": "python"
     },
@@ -82,6 +76,9 @@
     },
     "workerAlwaysReadyInstances": {
       "value": 0
+    },
+    "manageFunctionPlans": {
+      "value": true
     },
     "storageBlobContainerNames": {
       "value": [

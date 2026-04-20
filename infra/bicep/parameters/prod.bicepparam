@@ -22,8 +22,6 @@ param frontDoorApiRateLimitDurationMinutes = 1
 
 param staticWebAppSku = 'Standard'
 param staticWebAppLocation = 'eastus2'
-param staticWebAppPublicNetworkAccess = 'Enabled'
-param staticWebAppStagingPolicy = 'Disabled'
 
 param functionRuntimeName = 'python'
 param functionRuntimeVersion = '3.12'
@@ -33,6 +31,7 @@ param functionMaximumInstanceCount = 50
 param apiHttpPerInstanceConcurrency = 20
 param apiAlwaysReadyInstances = 0
 param workerAlwaysReadyInstances = 0
+param manageFunctionPlans = false
 
 param storageBlobContainerNames = [
   'raw-espn'

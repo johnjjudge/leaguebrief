@@ -130,6 +130,32 @@ resource wafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@20
     name: skuName
   }
   properties: {
+    customRules: {
+      rules: [
+        {
+          action: 'Block'
+          enabledState: 'Enabled'
+          matchConditions: [
+            {
+              matchValue: [
+                '/api/'
+              ]
+              matchVariable: 'RequestUri'
+              negateCondition: false
+              operator: 'BeginsWith'
+              transforms: [
+                'Lowercase'
+              ]
+            }
+          ]
+          name: 'ApiRateLimit'
+          priority: 1
+          rateLimitDurationInMinutes: apiRateLimitDurationMinutes
+          rateLimitThreshold: apiRateLimitThreshold
+          ruleType: 'RateLimitRule'
+        }
+      ]
+    }
     managedRules: {
       managedRuleSets: [
         {

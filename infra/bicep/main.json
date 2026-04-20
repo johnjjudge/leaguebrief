@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.42.1.51946",
-      "templateHash": "17771945332111687174"
+      "templateHash": "5553852404452344383"
     }
   },
   "parameters": {
@@ -138,28 +138,6 @@
         "description": "Azure region for the Static Web App. This may need to differ from the main workload region."
       }
     },
-    "staticWebAppPublicNetworkAccess": {
-      "type": "string",
-      "defaultValue": "Enabled",
-      "allowedValues": [
-        "Enabled",
-        "Disabled"
-      ],
-      "metadata": {
-        "description": "Public network access for the Static Web App."
-      }
-    },
-    "staticWebAppStagingPolicy": {
-      "type": "string",
-      "defaultValue": "Enabled",
-      "allowedValues": [
-        "Enabled",
-        "Disabled"
-      ],
-      "metadata": {
-        "description": "Staging environment policy for the Static Web App."
-      }
-    },
     "functionRuntimeName": {
       "type": "string",
       "defaultValue": "python",
@@ -219,6 +197,13 @@
       "minValue": 0,
       "metadata": {
         "description": "Optional always-ready instances for the worker Function App."
+      }
+    },
+    "manageFunctionPlans": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether Function Flex Consumption plans should be created or updated by this deployment. Set false to reuse existing plans when Azure rejects Flex plan updates in an existing resource group."
       }
     },
     "storageBlobContainerNames": {
@@ -903,14 +888,8 @@
           "name": {
             "value": "[variables('staticWebAppName')]"
           },
-          "publicNetworkAccess": {
-            "value": "[parameters('staticWebAppPublicNetworkAccess')]"
-          },
           "skuName": {
             "value": "[parameters('staticWebAppSku')]"
-          },
-          "stagingEnvironmentPolicy": {
-            "value": "[parameters('staticWebAppStagingPolicy')]"
           },
           "tags": {
             "value": "[variables('mergedTags')]"
@@ -923,7 +902,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "1725646791989525828"
+              "templateHash": "15654030586634383645"
             }
           },
           "parameters": {
@@ -936,14 +915,6 @@
             "skuName": {
               "type": "string",
               "defaultValue": "Standard"
-            },
-            "publicNetworkAccess": {
-              "type": "string",
-              "defaultValue": "Enabled"
-            },
-            "stagingEnvironmentPolicy": {
-              "type": "string",
-              "defaultValue": "Enabled"
             },
             "tags": {
               "type": "object",
@@ -1274,6 +1245,9 @@
           "location": {
             "value": "[parameters('functionAppLocation')]"
           },
+          "managePlan": {
+            "value": "[parameters('manageFunctionPlans')]"
+          },
           "maximumInstanceCount": {
             "value": "[parameters('functionMaximumInstanceCount')]"
           },
@@ -1300,7 +1274,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "2731304369837661417"
+              "templateHash": "1689951881461574005"
             }
           },
           "parameters": {
@@ -1337,6 +1311,10 @@
               "type": "int",
               "defaultValue": 0
             },
+            "managePlan": {
+              "type": "bool",
+              "defaultValue": true
+            },
             "tags": {
               "type": "object",
               "defaultValue": {}
@@ -1358,6 +1336,7 @@
           },
           "resources": [
             {
+              "condition": "[parameters('managePlan')]",
               "type": "Microsoft.Web/serverfarms",
               "apiVersion": "2024-11-01",
               "name": "[parameters('planName')]",
@@ -1385,7 +1364,7 @@
               "properties": {
                 "httpsOnly": true,
                 "publicNetworkAccess": "Enabled",
-                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('planName'))]",
+                "serverFarmId": "[if(parameters('managePlan'), resourceId('Microsoft.Web/serverfarms', parameters('planName')), resourceId('Microsoft.Web/serverfarms', parameters('planName')))]",
                 "functionAppConfig": {
                   "deployment": {
                     "storage": {
@@ -1444,7 +1423,7 @@
             },
             "planId": {
               "type": "string",
-              "value": "[resourceId('Microsoft.Web/serverfarms', parameters('planName'))]"
+              "value": "[if(parameters('managePlan'), resourceId('Microsoft.Web/serverfarms', parameters('planName')), resourceId('Microsoft.Web/serverfarms', parameters('planName')))]"
             }
           }
         }
@@ -1484,6 +1463,9 @@
           "location": {
             "value": "[parameters('functionAppLocation')]"
           },
+          "managePlan": {
+            "value": "[parameters('manageFunctionPlans')]"
+          },
           "maximumInstanceCount": {
             "value": "[parameters('functionMaximumInstanceCount')]"
           },
@@ -1510,7 +1492,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "2731304369837661417"
+              "templateHash": "1689951881461574005"
             }
           },
           "parameters": {
@@ -1547,6 +1529,10 @@
               "type": "int",
               "defaultValue": 0
             },
+            "managePlan": {
+              "type": "bool",
+              "defaultValue": true
+            },
             "tags": {
               "type": "object",
               "defaultValue": {}
@@ -1568,6 +1554,7 @@
           },
           "resources": [
             {
+              "condition": "[parameters('managePlan')]",
               "type": "Microsoft.Web/serverfarms",
               "apiVersion": "2024-11-01",
               "name": "[parameters('planName')]",
@@ -1595,7 +1582,7 @@
               "properties": {
                 "httpsOnly": true,
                 "publicNetworkAccess": "Enabled",
-                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('planName'))]",
+                "serverFarmId": "[if(parameters('managePlan'), resourceId('Microsoft.Web/serverfarms', parameters('planName')), resourceId('Microsoft.Web/serverfarms', parameters('planName')))]",
                 "functionAppConfig": {
                   "deployment": {
                     "storage": {
@@ -1654,7 +1641,7 @@
             },
             "planId": {
               "type": "string",
-              "value": "[resourceId('Microsoft.Web/serverfarms', parameters('planName'))]"
+              "value": "[if(parameters('managePlan'), resourceId('Microsoft.Web/serverfarms', parameters('planName')), resourceId('Microsoft.Web/serverfarms', parameters('planName')))]"
             }
           }
         }
@@ -1909,7 +1896,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "3623395569146454473"
+              "templateHash": "11171505846710407296"
             }
           },
           "parameters": {
@@ -2114,6 +2101,32 @@
                 "name": "[parameters('skuName')]"
               },
               "properties": {
+                "customRules": {
+                  "rules": [
+                    {
+                      "action": "Block",
+                      "enabledState": "Enabled",
+                      "matchConditions": [
+                        {
+                          "matchValue": [
+                            "/api/"
+                          ],
+                          "matchVariable": "RequestUri",
+                          "negateCondition": false,
+                          "operator": "BeginsWith",
+                          "transforms": [
+                            "Lowercase"
+                          ]
+                        }
+                      ],
+                      "name": "ApiRateLimit",
+                      "priority": 1,
+                      "rateLimitDurationInMinutes": "[parameters('apiRateLimitDurationMinutes')]",
+                      "rateLimitThreshold": "[parameters('apiRateLimitThreshold')]",
+                      "ruleType": "RateLimitRule"
+                    }
+                  ]
+                },
                 "managedRules": {
                   "managedRuleSets": [
                     {

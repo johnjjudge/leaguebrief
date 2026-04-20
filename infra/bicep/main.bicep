@@ -63,20 +63,6 @@ param staticWebAppSku string = 'Standard'
 @description('Azure region for the Static Web App. This may need to differ from the main workload region.')
 param staticWebAppLocation string = 'westus2'
 
-@allowed([
-  'Enabled'
-  'Disabled'
-])
-@description('Public network access for the Static Web App.')
-param staticWebAppPublicNetworkAccess string = 'Enabled'
-
-@allowed([
-  'Enabled'
-  'Disabled'
-])
-@description('Staging environment policy for the Static Web App.')
-param staticWebAppStagingPolicy string = 'Enabled'
-
 @description('Function runtime name for both Function Apps.')
 param functionRuntimeName string = 'python'
 
@@ -105,6 +91,9 @@ param apiAlwaysReadyInstances int = 0
 @minValue(0)
 @description('Optional always-ready instances for the worker Function App.')
 param workerAlwaysReadyInstances int = 0
+
+@description('Whether Function Flex Consumption plans should be created or updated by this deployment. Set false to reuse existing plans when Azure rejects Flex plan updates in an existing resource group.')
+param manageFunctionPlans bool = true
 
 @description('Blob containers created in the shared Storage Account.')
 param storageBlobContainerNames array = [
@@ -289,9 +278,7 @@ module staticWebApp './modules/staticwebapp.bicep' = {
     appSettings: staticWebAppSettings
     location: staticWebAppLocation
     name: staticWebAppName
-    publicNetworkAccess: staticWebAppPublicNetworkAccess
     skuName: staticWebAppSku
-    stagingEnvironmentPolicy: staticWebAppStagingPolicy
     tags: mergedTags
   }
 }
@@ -359,6 +346,7 @@ module apiFunction './modules/functionapp-flex.bicep' = {
     instanceMemoryMb: functionInstanceMemoryMb
     deploymentStorageContainerUrl: '${storage.outputs.blobEndpoint}${functionDeploymentContainerNames[0]}'
     location: functionAppLocation
+    managePlan: manageFunctionPlans
     maximumInstanceCount: functionMaximumInstanceCount
     name: apiFunctionAppName
     planName: apiFunctionPlanName
@@ -380,6 +368,7 @@ module workerFunction './modules/functionapp-flex.bicep' = {
     instanceMemoryMb: functionInstanceMemoryMb
     deploymentStorageContainerUrl: '${storage.outputs.blobEndpoint}${functionDeploymentContainerNames[1]}'
     location: functionAppLocation
+    managePlan: manageFunctionPlans
     maximumInstanceCount: functionMaximumInstanceCount
     name: workerFunctionAppName
     planName: workerFunctionPlanName

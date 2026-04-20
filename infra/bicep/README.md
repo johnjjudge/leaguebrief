@@ -16,7 +16,7 @@ This folder defines the Azure MVP infrastructure for LeagueBrief at resource-gro
 
 ## Parameter files
 - `parameters/dev.bicepparam`: development defaults. Custom domain and Front Door WAF are disabled by default.
-- `parameters/prod.bicepparam`: production defaults. Front Door custom-domain onboarding is enabled for `www.leaguebrief.com`, purge protection is enabled, and Front Door WAF is disabled by default until the subscription feature dependency is cleared.
+- `parameters/prod.bicepparam`: production defaults. Front Door custom-domain onboarding is enabled for `www.leaguebrief.com`, purge protection is enabled, Front Door WAF is disabled by default, and existing Flex plans are reused so repeat deployments are not blocked by the current Azure `ElasticWebApps` plan-update failure in this resource group.
 
 ## Important inputs
 - `sqlAdministratorPassword` is intentionally blank in the checked-in parameter files and should be overridden at deploy time.
