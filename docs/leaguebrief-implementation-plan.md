@@ -428,6 +428,7 @@ Implement provider-based auth and the foundational relational schema.
 - migrations
 - schema access layer
 - `/api/me`
+- documented Google and Microsoft provider-registration prerequisites for the production public host and Azure Static Web Apps callback URLs
 
 ### Codex task prompt
 ```text
@@ -445,6 +446,27 @@ Acceptance criteria:
 - schema constraints for canonical league uniqueness are present
 Do not implement account linking UI yet.
 ```
+
+### Auth provider prerequisite
+
+Before end-to-end auth testing, create the external provider registrations and seed their values into Key Vault.
+
+Current production registration contract:
+
+- Public host: `https://www.leaguebrief.com`
+- Google callback: `https://www.leaguebrief.com/.auth/login/google/callback`
+- Microsoft callback: `https://www.leaguebrief.com/.auth/login/aad/callback`
+- Microsoft logout callback: `https://www.leaguebrief.com/.auth/logout/aad/callback`
+
+Required Key Vault secret names:
+
+- `google-client-id`
+- `google-client-secret`
+- `microsoft-client-id`
+- `microsoft-client-secret`
+- `microsoft-tenant-id`
+
+These values are part of the infrastructure contract and must stay aligned with the Azure Static Web Apps custom-auth configuration and Bicep parameter defaults.
 
 ---
 

@@ -115,3 +115,29 @@ Runs `npm ci`, `npm run build`, detects `dist/` or `build/`, reads `staticWebApp
 - Re-running package scripts replaces the local package artifacts for the selected environment.
 - App deployment scripts always fetch fresh infrastructure outputs from Azure instead of relying on local cache files.
 - No script requires manual editing for ordinary use.
+
+## Auth provider prerequisites
+
+Infrastructure deployment does not create the external Google or Microsoft identity-provider registrations for you.
+
+Before testing end-to-end sign-in against production, create the provider registrations for the public host `https://www.leaguebrief.com` and seed the resulting values into Key Vault using these secret names:
+
+- `google-client-id`
+- `google-client-secret`
+- `microsoft-client-id`
+- `microsoft-client-secret`
+- `microsoft-tenant-id`
+
+The exact callback URLs and registration fields are documented in [../bicep/README.md](../bicep/README.md).
+
+## DNS prerequisite
+
+Infrastructure deployment does not complete external DNS cutover when `manageDnsInAzure = false`.
+
+For the current production setup on Squarespace, you must:
+
+- add the Front Door validation TXT record for `_dnsauth.www`
+- point `www` to the Front Door endpoint with a `CNAME`
+- add a Squarespace forwarding rule from `@` to `www.leaguebrief.com`
+
+The exact DNS process is documented in [../bicep/README.md](../bicep/README.md).
