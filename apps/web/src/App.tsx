@@ -52,8 +52,8 @@ function Home() {
       <aside className="panel status-card" aria-label="MVP shell status">
         <p className="eyebrow">Phase 2 shell</p>
         <ul>
-          <li>Google and Microsoft auth placeholders only</li>
-          <li>No database, ESPN, or Key Vault calls yet</li>
+          <li>Google and Microsoft auth foundation</li>
+          <li>Database schema and /api/me foundation</li>
           <li>Static Web Apps + Front Door deployment-ready</li>
         </ul>
       </aside>

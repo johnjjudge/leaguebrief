@@ -3,6 +3,8 @@ param location string
 param skuName string = 'Standard'
 param tags object = {}
 param appSettings object = {}
+param linkedBackendResourceId string = ''
+param linkedBackendRegion string = ''
 
 resource staticSite 'Microsoft.Web/staticSites@2023-12-01' = {
   name: name
@@ -24,6 +26,15 @@ resource appSettingsConfig 'Microsoft.Web/staticSites/config@2023-12-01' = {
   parent: staticSite
   name: 'appsettings'
   properties: appSettings
+}
+
+resource linkedBackend 'Microsoft.Web/staticSites/linkedBackends@2023-12-01' = if (!empty(linkedBackendResourceId)) {
+  parent: staticSite
+  name: 'linkedBackend'
+  properties: {
+    backendResourceId: linkedBackendResourceId
+    region: linkedBackendRegion
+  }
 }
 
 output defaultHostname string = staticSite.properties.defaultHostname

@@ -210,7 +210,6 @@ var frontDoorProfileName = '${namePrefix}-${environmentName}-fd'
 var frontDoorEndpointName = '${namePrefix}-${environmentName}-edge'
 var frontDoorWafPolicyName = '${namePrefix}-${environmentName}-waf'
 var publicBaseUrl = enableCustomDomain && !empty(publicHostName) ? 'https://${publicHostName}' : ''
-var apiFunctionDefaultHostName = '${apiFunctionAppName}.azurewebsites.net'
 var functionDeploymentContainerNames = [
   'api-packages'
   'worker-packages'
@@ -277,6 +276,8 @@ module staticWebApp './modules/staticwebapp.bicep' = {
   params: {
     appSettings: staticWebAppSettings
     location: staticWebAppLocation
+    linkedBackendRegion: functionAppLocation
+    linkedBackendResourceId: apiFunction.outputs.id
     name: staticWebAppName
     skuName: staticWebAppSku
     tags: mergedTags
@@ -396,7 +397,6 @@ module roleAssignments './modules/role-assignments.bicep' = {
 module frontDoor './modules/frontdoor-premium.bicep' = {
   name: 'frontDoor'
   params: {
-    apiOriginHostName: apiFunctionDefaultHostName
     apiRateLimitDurationMinutes: frontDoorApiRateLimitDurationMinutes
     apiRateLimitThreshold: frontDoorApiRateLimitThreshold
     botManagerVersion: frontDoorBotManagerVersion

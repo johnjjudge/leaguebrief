@@ -28,6 +28,7 @@ func start
 
 ```bash
 pip install -r requirements-dev.txt
+python -m ruff check .
 python -m pytest
 ```
 

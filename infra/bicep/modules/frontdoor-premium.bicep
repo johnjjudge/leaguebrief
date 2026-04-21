@@ -5,7 +5,6 @@ param location string = 'global'
 param skuName string = 'Premium_AzureFrontDoor'
 param tags object = {}
 param webOriginHostName string
-param apiOriginHostName string
 param enableCustomDomain bool = false
 param enableWaf bool = false
 param publicHostName string = ''
@@ -56,25 +55,6 @@ resource webOriginGroup 'Microsoft.Cdn/profiles/originGroups@2025-06-01' = {
   }
 }
 
-resource apiOriginGroup 'Microsoft.Cdn/profiles/originGroups@2025-06-01' = {
-  parent: profile
-  name: 'api-origins'
-  properties: {
-    healthProbeSettings: {
-      probeIntervalInSeconds: 120
-      probePath: '/api/health'
-      probeProtocol: 'Https'
-      probeRequestType: 'GET'
-    }
-    loadBalancingSettings: {
-      additionalLatencyInMilliseconds: 0
-      sampleSize: 4
-      successfulSamplesRequired: 3
-    }
-    sessionAffinityState: 'Disabled'
-  }
-}
-
 resource webOrigin 'Microsoft.Cdn/profiles/originGroups/origins@2025-06-01' = {
   parent: webOriginGroup
   name: 'static-web-app'
@@ -85,21 +65,6 @@ resource webOrigin 'Microsoft.Cdn/profiles/originGroups/origins@2025-06-01' = {
     httpPort: 80
     httpsPort: 443
     originHostHeader: webOriginHostName
-    priority: 1
-    weight: 1000
-  }
-}
-
-resource apiOrigin 'Microsoft.Cdn/profiles/originGroups/origins@2025-06-01' = {
-  parent: apiOriginGroup
-  name: 'api-function-app'
-  properties: {
-    enabledState: 'Enabled'
-    enforceCertificateNameCheck: true
-    hostName: apiOriginHostName
-    httpPort: 80
-    httpsPort: 443
-    originHostHeader: apiOriginHostName
     priority: 1
     weight: 1000
   }
@@ -222,7 +187,7 @@ resource apiRoute 'Microsoft.Cdn/profiles/afdEndpoints/routes@2025-06-01' = {
   parent: endpoint
   name: 'api-route'
   dependsOn: [
-    apiOrigin
+    webOrigin
   ]
   properties: union({
     enabledState: 'Enabled'
@@ -230,7 +195,7 @@ resource apiRoute 'Microsoft.Cdn/profiles/afdEndpoints/routes@2025-06-01' = {
     httpsRedirect: 'Enabled'
     linkToDefaultDomain: 'Enabled'
     originGroup: {
-      id: apiOriginGroup.id
+      id: webOriginGroup.id
     }
     patternsToMatch: [
       '/api/*'

@@ -20,7 +20,7 @@ Optional local value:
 
 Use `.env.example` as the local template.
 
-The deployed Static Web App receives additional app settings from Bicep, including `API_BASE_PATH`, `PUBLIC_APP_URL`, `FRONT_DOOR_PUBLIC_HOST`, Key Vault-backed auth placeholders, and `LEAGUEBRIEF_ENVIRONMENT`. This phase-2 shell intentionally does not use auth, database, Key Vault, or ESPN settings yet.
+The deployed Static Web App receives additional app settings from Bicep, including `API_BASE_PATH`, `PUBLIC_APP_URL`, `FRONT_DOOR_PUBLIC_HOST`, Key Vault-backed auth settings, and `LEAGUEBRIEF_ENVIRONMENT`. The UI shell does not implement ESPN workflows yet.
 
 ## Run locally
 
@@ -32,6 +32,9 @@ npm run dev
 ## Build
 
 ```bash
+npm run lint
+npm run test
+npm run typecheck
 npm run build
 ```
 

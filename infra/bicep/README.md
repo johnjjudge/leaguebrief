@@ -55,6 +55,8 @@ Create a Microsoft Entra app registration with these values:
 
 This callback path uses the Azure Static Web Apps built-in provider alias `aad`.
 
+The API Function App is linked to the Static Web App as a bring-your-own backend. Front Door sends `/api/*` to the Static Web App origin so Static Web Apps can enforce auth rules and forward authenticated API requests with the `x-ms-client-principal` header. `GET /api/health` remains anonymous.
+
 ## DNS cutover for Squarespace
 
 Production currently uses:

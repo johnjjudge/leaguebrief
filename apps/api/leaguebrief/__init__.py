@@ -1,0 +1,1 @@
+"""LeagueBrief API package."""

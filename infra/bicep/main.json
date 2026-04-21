@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.42.1.51946",
-      "templateHash": "14340053651432415213"
+      "templateHash": "7230950618472728938"
     }
   },
   "parameters": {
@@ -416,7 +416,6 @@
     "frontDoorEndpointName": "[format('{0}-{1}-edge', parameters('namePrefix'), parameters('environmentName'))]",
     "frontDoorWafPolicyName": "[format('{0}-{1}-waf', parameters('namePrefix'), parameters('environmentName'))]",
     "publicBaseUrl": "[if(and(parameters('enableCustomDomain'), not(empty(parameters('publicHostName')))), format('https://{0}', parameters('publicHostName')), '')]",
-    "apiFunctionDefaultHostName": "[format('{0}.azurewebsites.net', variables('apiFunctionAppName'))]",
     "functionDeploymentContainerNames": [
       "api-packages",
       "worker-packages"
@@ -885,6 +884,12 @@
           "location": {
             "value": "[parameters('staticWebAppLocation')]"
           },
+          "linkedBackendRegion": {
+            "value": "[parameters('functionAppLocation')]"
+          },
+          "linkedBackendResourceId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'apiFunction'), '2025-04-01').outputs.id.value]"
+          },
           "name": {
             "value": "[variables('staticWebAppName')]"
           },
@@ -902,7 +907,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "15654030586634383645"
+              "templateHash": "4929337122750593112"
             }
           },
           "parameters": {
@@ -923,6 +928,14 @@
             "appSettings": {
               "type": "object",
               "defaultValue": {}
+            },
+            "linkedBackendResourceId": {
+              "type": "string",
+              "defaultValue": ""
+            },
+            "linkedBackendRegion": {
+              "type": "string",
+              "defaultValue": ""
             }
           },
           "resources": [
@@ -951,6 +964,19 @@
               "dependsOn": [
                 "[resourceId('Microsoft.Web/staticSites', parameters('name'))]"
               ]
+            },
+            {
+              "condition": "[not(empty(parameters('linkedBackendResourceId')))]",
+              "type": "Microsoft.Web/staticSites/linkedBackends",
+              "apiVersion": "2023-12-01",
+              "name": "[format('{0}/{1}', parameters('name'), 'linkedBackend')]",
+              "properties": {
+                "backendResourceId": "[parameters('linkedBackendResourceId')]",
+                "region": "[parameters('linkedBackendRegion')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/staticSites', parameters('name'))]"
+              ]
             }
           ],
           "outputs": {
@@ -974,6 +1000,7 @@
         }
       },
       "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'apiFunction')]",
         "[resourceId('Microsoft.Resources/deployments', 'keyVault')]"
       ]
     },
@@ -1831,9 +1858,6 @@
         },
         "mode": "Incremental",
         "parameters": {
-          "apiOriginHostName": {
-            "value": "[variables('apiFunctionDefaultHostName')]"
-          },
           "apiRateLimitDurationMinutes": {
             "value": "[parameters('frontDoorApiRateLimitDurationMinutes')]"
           },
@@ -1896,7 +1920,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "11171505846710407296"
+              "templateHash": "10816121567083908434"
             }
           },
           "parameters": {
@@ -1922,9 +1946,6 @@
               "defaultValue": {}
             },
             "webOriginHostName": {
-              "type": "string"
-            },
-            "apiOriginHostName": {
               "type": "string"
             },
             "enableCustomDomain": {
@@ -2024,28 +2045,6 @@
               ]
             },
             {
-              "type": "Microsoft.Cdn/profiles/originGroups",
-              "apiVersion": "2025-06-01",
-              "name": "[format('{0}/{1}', parameters('profileName'), 'api-origins')]",
-              "properties": {
-                "healthProbeSettings": {
-                  "probeIntervalInSeconds": 120,
-                  "probePath": "/api/health",
-                  "probeProtocol": "Https",
-                  "probeRequestType": "GET"
-                },
-                "loadBalancingSettings": {
-                  "additionalLatencyInMilliseconds": 0,
-                  "sampleSize": 4,
-                  "successfulSamplesRequired": 3
-                },
-                "sessionAffinityState": "Disabled"
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Cdn/profiles', parameters('profileName'))]"
-              ]
-            },
-            {
               "type": "Microsoft.Cdn/profiles/originGroups/origins",
               "apiVersion": "2025-06-01",
               "name": "[format('{0}/{1}/{2}', parameters('profileName'), 'web-origins', 'static-web-app')]",
@@ -2061,24 +2060,6 @@
               },
               "dependsOn": [
                 "[resourceId('Microsoft.Cdn/profiles/originGroups', parameters('profileName'), 'web-origins')]"
-              ]
-            },
-            {
-              "type": "Microsoft.Cdn/profiles/originGroups/origins",
-              "apiVersion": "2025-06-01",
-              "name": "[format('{0}/{1}/{2}', parameters('profileName'), 'api-origins', 'api-function-app')]",
-              "properties": {
-                "enabledState": "Enabled",
-                "enforceCertificateNameCheck": true,
-                "hostName": "[parameters('apiOriginHostName')]",
-                "httpPort": 80,
-                "httpsPort": 443,
-                "originHostHeader": "[parameters('apiOriginHostName')]",
-                "priority": 1,
-                "weight": 1000
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Cdn/profiles/originGroups', parameters('profileName'), 'api-origins')]"
               ]
             },
             {
@@ -2162,12 +2143,12 @@
               "type": "Microsoft.Cdn/profiles/afdEndpoints/routes",
               "apiVersion": "2025-06-01",
               "name": "[format('{0}/{1}/{2}', parameters('profileName'), parameters('endpointName'), 'api-route')]",
-              "properties": "[union(createObject('enabledState', 'Enabled', 'forwardingProtocol', 'MatchRequest', 'httpsRedirect', 'Enabled', 'linkToDefaultDomain', 'Enabled', 'originGroup', createObject('id', resourceId('Microsoft.Cdn/profiles/originGroups', parameters('profileName'), 'api-origins')), 'patternsToMatch', createArray('/api/*'), 'supportedProtocols', createArray('Http', 'Https')), if(and(parameters('enableCustomDomain'), not(empty(parameters('publicHostName')))), createObject('customDomains', variables('routeCustomDomains')), createObject()))]",
+              "properties": "[union(createObject('enabledState', 'Enabled', 'forwardingProtocol', 'MatchRequest', 'httpsRedirect', 'Enabled', 'linkToDefaultDomain', 'Enabled', 'originGroup', createObject('id', resourceId('Microsoft.Cdn/profiles/originGroups', parameters('profileName'), 'web-origins')), 'patternsToMatch', createArray('/api/*'), 'supportedProtocols', createArray('Http', 'Https')), if(and(parameters('enableCustomDomain'), not(empty(parameters('publicHostName')))), createObject('customDomains', variables('routeCustomDomains')), createObject()))]",
               "dependsOn": [
-                "[resourceId('Microsoft.Cdn/profiles/originGroups/origins', parameters('profileName'), 'api-origins', 'api-function-app')]",
-                "[resourceId('Microsoft.Cdn/profiles/originGroups', parameters('profileName'), 'api-origins')]",
                 "[resourceId('Microsoft.Cdn/profiles/customDomains', parameters('profileName'), 'primary-domain')]",
-                "[resourceId('Microsoft.Cdn/profiles/afdEndpoints', parameters('profileName'), parameters('endpointName'))]"
+                "[resourceId('Microsoft.Cdn/profiles/afdEndpoints', parameters('profileName'), parameters('endpointName'))]",
+                "[resourceId('Microsoft.Cdn/profiles/originGroups/origins', parameters('profileName'), 'web-origins', 'static-web-app')]",
+                "[resourceId('Microsoft.Cdn/profiles/originGroups', parameters('profileName'), 'web-origins')]"
               ]
             },
             {

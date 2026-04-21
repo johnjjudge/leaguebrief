@@ -4,13 +4,13 @@ LeagueBrief is an ESPN fantasy football league history and draft prep analytics 
 
 ## App shells
 
-The deployable phase-2 shells live under:
+The deployable app components live under:
 
 - `apps/web`: React + TypeScript frontend built with Vite and deployed to Azure Static Web Apps.
-- `apps/api`: Python Azure Functions API with `GET /api/health`.
+- `apps/api`: Python Azure Functions API with `GET /api/health`, `GET /api/me`, and SQL migrations.
 - `apps/worker`: Python Azure Functions queue-worker placeholder bound to `IMPORT_JOBS_QUEUE_NAME`.
 
-The shells intentionally do not implement auth, database access, ESPN ingestion, Key Vault reads, or analytics yet.
+The current app implements the auth and schema foundation, but does not implement ESPN ingestion or analytics dashboards yet.
 
 ## Local app development
 
@@ -20,6 +20,9 @@ Frontend:
 cd apps/web
 npm ci
 npm run dev
+npm run lint
+npm run test
+npm run typecheck
 npm run build
 ```
 
@@ -44,6 +47,14 @@ Health check:
 curl http://localhost:7071/api/health
 ```
 
+API validation:
+
+```bash
+pip install -r requirements-dev.txt
+python -m ruff check .
+python -m pytest
+```
+
 Worker:
 
 ```bash
@@ -55,6 +66,14 @@ pip install -r requirements.txt
 func start
 ```
 
+Worker validation:
+
+```bash
+pip install -r requirements-dev.txt
+python -m ruff check .
+python -m pytest
+```
+
 Required local Function App settings:
 
 - `FUNCTIONS_WORKER_RUNTIME=python`
@@ -64,7 +83,7 @@ Required local Function App settings:
 
 The Bicep infrastructure targets Python `3.13` and Azure Functions Core Tools v4, so local `func start` validation should use Python 3.13 plus the `func` CLI.
 
-Azure injects the broader Bicep-provisioned settings for deployed environments, including `PUBLIC_BASE_URL`, `API_BASE_URL`, storage account/container names, Key Vault references, SQL placeholders, and Application Insights. The phase-2 shells only read environment labels and role values.
+Azure injects the broader Bicep-provisioned settings for deployed environments, including `PUBLIC_BASE_URL`, `API_BASE_URL`, storage account/container names, Key Vault references, SQL settings, and Application Insights.
 
 ## Static Web Apps forwarding gateway
 
