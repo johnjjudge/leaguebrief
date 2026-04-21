@@ -1,0 +1,250 @@
+:root {
+  color: #102018;
+  background: #f6f1e8;
+  font-family:
+    "Aptos Display",
+    "Gill Sans",
+    "Trebuchet MS",
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --ink: #102018;
+  --muted: #5d685f;
+  --paper: #fffaf0;
+  --line: rgba(16, 32, 24, 0.16);
+  --field: #143d2a;
+  --gold: #d79c2b;
+  --grass: #dfead6;
+  --shadow: 0 24px 80px rgba(30, 51, 38, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(215, 156, 43, 0.32), transparent 34rem),
+    linear-gradient(135deg, #f6f1e8 0%, #eaf3e1 48%, #f8ead3 100%);
+}
+
+a {
+  color: inherit;
+}
+
+.app-shell {
+  width: min(1180px, calc(100% - 32px));
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 24px 0;
+}
+
+.site-header,
+.site-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.site-header {
+  padding: 14px 0 34px;
+}
+
+.brand,
+.nav-link,
+.button {
+  text-decoration: none;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.08rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.brand-mark {
+  display: inline-grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--field);
+  color: var(--paper);
+  box-shadow: 0 12px 30px rgba(20, 61, 42, 0.25);
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.nav-link {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--muted);
+  font-weight: 700;
+  padding: 10px 14px;
+}
+
+.nav-link.active,
+.nav-link:hover {
+  border-color: var(--line);
+  background: rgba(255, 250, 240, 0.68);
+  color: var(--ink);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.7fr);
+  gap: 28px;
+  align-items: stretch;
+}
+
+.hero-copy,
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 32px;
+  background: rgba(255, 250, 240, 0.82);
+  box-shadow: var(--shadow);
+}
+
+.hero-copy {
+  padding: clamp(36px, 7vw, 78px);
+}
+
+.panel {
+  padding: clamp(26px, 4vw, 42px);
+}
+
+.route-panel {
+  min-height: 440px;
+}
+
+.eyebrow {
+  margin: 0 0 16px;
+  color: #8b5a06;
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+h1 {
+  max-width: 880px;
+  margin: 0;
+  font-size: clamp(2.45rem, 7vw, 5.8rem);
+  line-height: 0.9;
+  letter-spacing: -0.075em;
+}
+
+p {
+  color: var(--muted);
+  font-size: 1.08rem;
+  line-height: 1.7;
+}
+
+.hero-copy p {
+  max-width: 660px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-weight: 900;
+  padding: 0 18px;
+}
+
+.button.primary {
+  border-color: var(--field);
+  background: var(--field);
+  color: var(--paper);
+}
+
+.button.secondary {
+  background: rgba(255, 250, 240, 0.72);
+}
+
+.status-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.status-card ul {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.status-card li,
+.placeholder-card {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(223, 234, 214, 0.5);
+  padding: 16px;
+}
+
+.placeholder-card {
+  display: grid;
+  gap: 8px;
+  max-width: 520px;
+  margin-top: 34px;
+}
+
+.placeholder-card span {
+  color: #8b5a06;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.site-footer {
+  margin-top: 32px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.92rem;
+  padding: 22px 0 8px;
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    width: min(100% - 24px, 1180px);
+  }
+
+  .site-header,
+  .site-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-copy,
+  .panel {
+    border-radius: 24px;
+  }
+}

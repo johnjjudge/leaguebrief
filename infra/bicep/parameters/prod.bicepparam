@@ -24,7 +24,7 @@ param staticWebAppSku = 'Standard'
 param staticWebAppLocation = 'eastus2'
 
 param functionRuntimeName = 'python'
-param functionRuntimeVersion = '3.12'
+param functionRuntimeVersion = '3.13'
 param functionAppLocation = 'westus3'
 param functionInstanceMemoryMb = 2048
 param functionMaximumInstanceCount = 50

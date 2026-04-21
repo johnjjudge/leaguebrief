@@ -8,7 +8,7 @@ These Bash scripts support local macOS deployment of LeagueBrief infrastructure 
 - Azure Bicep via `az bicep`
 - `jq`
 - `zip`
-- `python3`
+- `python3.13`
 - `node`, `npm`, and `npx`
 - Azure Functions Core Tools via `func`
 
@@ -34,6 +34,10 @@ Environment variable fallbacks:
 - `LB_ENV`
 - `LB_SUBSCRIPTION_ID`
 - `LB_RESOURCE_GROUP`
+
+Optional packaging override:
+
+- `LB_PYTHON_BIN`: Python executable used by API and worker package scripts. Defaults to `python3.13`.
 
 `deploy-infra.sh` also requires:
 

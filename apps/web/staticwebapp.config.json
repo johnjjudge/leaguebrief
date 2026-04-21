@@ -1,4 +1,11 @@
 {
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/api/*",
+      "/*.{css,js,png,jpg,gif,svg,ico,webp,avif,woff,woff2}"
+    ]
+  },
   "networking": {
     "allowedIpRanges": [
       "AzureFrontDoor.Backend"

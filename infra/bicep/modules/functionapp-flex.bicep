@@ -2,7 +2,7 @@ param name string
 param planName string
 param location string
 param runtimeName string = 'python'
-param runtimeVersion string = '3.12'
+param runtimeVersion string = '3.13'
 param instanceMemoryMb int = 2048
 param maximumInstanceCount int = 50
 param httpPerInstanceConcurrency int = 20

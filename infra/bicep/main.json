@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.42.1.51946",
-      "templateHash": "5553852404452344383"
+      "templateHash": "14340053651432415213"
     }
   },
   "parameters": {
@@ -147,7 +147,7 @@
     },
     "functionRuntimeVersion": {
       "type": "string",
-      "defaultValue": "3.12",
+      "defaultValue": "3.13",
       "metadata": {
         "description": "Function runtime version for both Function Apps."
       }
@@ -1274,7 +1274,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "1689951881461574005"
+              "templateHash": "6041288929279334373"
             }
           },
           "parameters": {
@@ -1293,7 +1293,7 @@
             },
             "runtimeVersion": {
               "type": "string",
-              "defaultValue": "3.12"
+              "defaultValue": "3.13"
             },
             "instanceMemoryMb": {
               "type": "int",
@@ -1492,7 +1492,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "1689951881461574005"
+              "templateHash": "6041288929279334373"
             }
           },
           "parameters": {
@@ -1511,7 +1511,7 @@
             },
             "runtimeVersion": {
               "type": "string",
-              "defaultValue": "3.12"
+              "defaultValue": "3.13"
             },
             "instanceMemoryMb": {
               "type": "int",

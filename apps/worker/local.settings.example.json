@@ -1,0 +1,11 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "IMPORT_JOBS_QUEUE_NAME": "import-jobs",
+    "LEAGUEBRIEF_ENVIRONMENT": "local",
+    "APP_KIND": "worker",
+    "FUNCTION_APP_ROLE": "worker"
+  }
+}

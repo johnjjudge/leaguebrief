@@ -30,7 +30,7 @@ if [[ "$SHOW_HELP" -eq 1 ]]; then
   exit 0
 fi
 
-require_commands az jq zip python3 node npm npx func
+require_commands az jq zip python3.13 node npm npx func
 ensure_azure_context
 ensure_bicep_available
 

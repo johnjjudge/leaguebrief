@@ -11,6 +11,7 @@ SKIP_PACKAGE=0
 ENVIRONMENT="${LB_ENV:-}"
 AZ_SUBSCRIPTION_ID="${LB_SUBSCRIPTION_ID:-}"
 RESOURCE_GROUP="${LB_RESOURCE_GROUP:-}"
+PYTHON_BIN="${LB_PYTHON_BIN:-python3.13}"
 POSITIONAL_ARGS=()
 
 log() {
@@ -32,6 +33,7 @@ reset_common_args() {
   ENVIRONMENT="${LB_ENV:-}"
   AZ_SUBSCRIPTION_ID="${LB_SUBSCRIPTION_ID:-}"
   RESOURCE_GROUP="${LB_RESOURCE_GROUP:-}"
+  PYTHON_BIN="${LB_PYTHON_BIN:-python3.13}"
   POSITIONAL_ARGS=()
 }
 
@@ -215,7 +217,7 @@ package_python_function_app() {
   local venv_dir
 
   require_environment_name
-  require_command python3
+  require_command "$PYTHON_BIN"
   require_command zip
   require_directory "$source_dir" "Source directory"
   require_file "$source_dir/host.json" "Azure Functions host.json"
@@ -233,7 +235,7 @@ package_python_function_app() {
   cp -R "$source_dir"/. "$package_dir"
   clean_package_dir "$package_dir"
 
-  python3 -m venv "$venv_dir"
+  "$PYTHON_BIN" -m venv "$venv_dir"
   "$venv_dir/bin/pip" install --upgrade pip >/dev/null
 
   if [[ -s "$source_dir/requirements.txt" ]]; then

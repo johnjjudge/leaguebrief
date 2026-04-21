@@ -67,7 +67,7 @@ param staticWebAppLocation string = 'westus2'
 param functionRuntimeName string = 'python'
 
 @description('Function runtime version for both Function Apps.')
-param functionRuntimeVersion string = '3.12'
+param functionRuntimeVersion string = '3.13'
 
 @description('Azure region for Function Apps and Flex Consumption plans.')
 param functionAppLocation string = resourceGroup().location
