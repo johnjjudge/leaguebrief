@@ -7,10 +7,10 @@ LeagueBrief is an ESPN fantasy football league history and draft prep analytics 
 The deployable app components live under:
 
 - `apps/web`: React + TypeScript frontend built with Vite and deployed to Azure Static Web Apps.
-- `apps/api`: Python Azure Functions API with `GET /api/health`, `GET /api/me`, and SQL migrations.
+- `apps/api`: Python Azure Functions API with health, auth, league onboarding endpoints, and SQL migrations.
 - `apps/worker`: Python Azure Functions queue-worker placeholder bound to `IMPORT_JOBS_QUEUE_NAME`.
 
-The current app implements the auth and schema foundation, but does not implement ESPN ingestion or analytics dashboards yet.
+The current app implements the auth, schema, and league onboarding foundation, but does not implement ESPN ingestion or analytics dashboards yet.
 
 ## Local app development
 

@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import pytest
@@ -7,7 +6,6 @@ from leaguebrief.db.migrate import (
     Migration,
     apply_migrations,
     discover_migrations,
-    run_migrations,
     split_sql_batches,
 )
 
@@ -129,22 +127,17 @@ def test_mvp_schema_contains_required_tables_and_constraints():
     assert "UX_metric_definitions_name_version" in migration_sql
 
 
-@pytest.mark.skipif(
-    os.getenv("LEAGUEBRIEF_RUN_LIVE_SQL_TESTS") != "1"
-    or not os.getenv("LEAGUEBRIEF_TEST_SQL_CONNECTION_STRING"),
-    reason=(
-        "Set LEAGUEBRIEF_RUN_LIVE_SQL_TESTS=1 and "
-        "LEAGUEBRIEF_TEST_SQL_CONNECTION_STRING for disposable SQL validation."
-    ),
-)
-def test_live_sql_migrations_run_successfully():
-    from leaguebrief.db.connection import connect
-
-    connection = connect(os.environ["LEAGUEBRIEF_TEST_SQL_CONNECTION_STRING"])
-    try:
-        result = run_migrations(connection=connection)
-        assert result.applied or result.skipped
+@pytest.mark.sql_integration
+def test_live_sql_migrations_run_successfully(live_sql_database):
+    with live_sql_database.managed_connection() as connection:
         cursor = connection.cursor()
+        applied_rows = cursor.execute(
+            """
+            SELECT version
+            FROM dbo.schema_migrations
+            WHERE version = N'0001'
+            """
+        ).fetchall()
         rows = cursor.execute(
             """
             SELECT name
@@ -159,5 +152,4 @@ def test_live_sql_migrations_run_successfully():
             "UX_leagues_platform_external_league_id",
             "UX_auth_provider_accounts_provider_subject",
         }
-    finally:
-        connection.close()
+        assert [row[0] for row in applied_rows] == ["0001"]

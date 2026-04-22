@@ -38,7 +38,14 @@ Apply SQL migrations:
 python -m leaguebrief.db.migrate
 ```
 
-`GET /api/me` expects Azure Static Web Apps to forward an authenticated `x-ms-client-principal` header. For local tests, use the Static Web Apps CLI auth emulator or construct the header manually.
+`GET /api/me` expects Azure Static Web Apps to forward an authenticated `x-ms-client-principal` header. League endpoints use the same authenticated principal:
+
+- `GET /api/leagues`
+- `POST /api/leagues`
+- `GET /api/leagues/{leagueId}`
+- `POST /api/leagues/{leagueId}/attach`
+
+For local tests, use the Static Web Apps CLI auth emulator or construct the header manually.
 
 ## Test
 
@@ -47,5 +54,31 @@ pip install -r requirements-dev.txt
 python -m ruff check .
 python -m pytest
 ```
+
+Live SQL repository tests are opt-in. They create a uniquely named disposable
+Azure SQL database, apply migrations, run repository coverage against it, close
+connections, and drop the database in teardown.
+
+Required environment values:
+
+- `LEAGUEBRIEF_RUN_LIVE_SQL_TESTS=1`
+- `LEAGUEBRIEF_TEST_SQL_SERVER_FQDN`
+- `LEAGUEBRIEF_TEST_SQL_ADMIN_LOGIN`
+- `LEAGUEBRIEF_TEST_SQL_ADMIN_PASSWORD`
+- `LEAGUEBRIEF_TEST_SQL_ODBC_DRIVER` optional, defaults to `ODBC Driver 18 for SQL Server`
+
+Run only the live SQL integration tests:
+
+```bash
+LEAGUEBRIEF_RUN_LIVE_SQL_TESTS=1 \
+LEAGUEBRIEF_TEST_SQL_SERVER_FQDN='<server>.database.windows.net' \
+LEAGUEBRIEF_TEST_SQL_ADMIN_LOGIN='<login>' \
+LEAGUEBRIEF_TEST_SQL_ADMIN_PASSWORD='<password>' \
+python -m pytest -m sql_integration
+```
+
+Use a non-production SQL logical server/login that can create and drop test
+databases. If teardown fails, the test error includes the disposable database
+name so it can be removed manually.
 
 The deployed Azure Functions runtime is Python 3.13. Use Azure Functions Core Tools v4 for local `func start` validation.
