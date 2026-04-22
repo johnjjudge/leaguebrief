@@ -7,10 +7,12 @@ LeagueBrief is an ESPN fantasy football league history and draft prep analytics 
 The deployable app components live under:
 
 - `apps/web`: React + TypeScript frontend built with Vite and deployed to Azure Static Web Apps.
-- `apps/api`: Python Azure Functions API with health, auth, league onboarding endpoints, and SQL migrations.
-- `apps/worker`: Python Azure Functions queue-worker placeholder bound to `IMPORT_JOBS_QUEUE_NAME`.
+- `apps/api`: Python Azure Functions API with health, auth, league onboarding, private ESPN credentials, import job enqueueing, and SQL migrations.
+- `apps/worker`: Python Azure Functions queue worker bound to `IMPORT_JOBS_QUEUE_NAME`.
 
-The current app implements the auth, schema, and league onboarding foundation, but does not implement ESPN ingestion or analytics dashboards yet.
+The current app implements the auth, schema, league onboarding, private
+credential, and async import job foundations, but does not implement ESPN
+ingestion or analytics dashboards yet.
 
 ## Local app development
 
@@ -78,7 +80,9 @@ Required local Function App settings:
 
 - `FUNCTIONS_WORKER_RUNTIME=python`
 - `AzureWebJobsStorage=<storage-connection-string>` or `UseDevelopmentStorage=true` with Azurite
-- `IMPORT_JOBS_QUEUE_NAME=import-jobs` for the worker
+- `IMPORT_JOBS_QUEUE_NAME=import-jobs`
+- `KEY_VAULT_URI=<vault-uri>` for API credential submission
+- SQL connection settings for API and worker SQL access
 - `LEAGUEBRIEF_ENVIRONMENT=local`
 
 The Bicep infrastructure targets Python `3.13` and Azure Functions Core Tools v4, so local `func start` validation should use Python 3.13 plus the `func` CLI.

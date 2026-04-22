@@ -9,8 +9,16 @@ from leaguebrief.auth import (
     UserDisabledError,
     authenticate_current_user,
 )
+from leaguebrief.credentials import (
+    CredentialSecretStoreError,
+    CredentialService,
+    CredentialValidationError,
+)
+from leaguebrief.db.credentials import SqlCredentialRepository
+from leaguebrief.db.jobs import SqlImportJobRepository
 from leaguebrief.db.leagues import SqlLeagueRepository
 from leaguebrief.db.users import SqlUserRepository
+from leaguebrief.jobs import ImportJobQueueError, ImportJobService, ImportJobValidationError
 from leaguebrief.leagues import (
     LeagueAccessDeniedError,
     LeagueAttachMismatchError,
@@ -18,6 +26,8 @@ from leaguebrief.leagues import (
     LeagueService,
     LeagueValidationError,
 )
+from leaguebrief.queues import AzureStorageImportJobQueue, QueueConfigurationError
+from leaguebrief.secrets import AzureKeyVaultSecretStore, SecretStoreConfigurationError
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
@@ -46,6 +56,22 @@ def get_user_repository() -> SqlUserRepository:
 
 def get_league_repository() -> SqlLeagueRepository:
     return SqlLeagueRepository()
+
+
+def get_credential_repository() -> SqlCredentialRepository:
+    return SqlCredentialRepository()
+
+
+def get_secret_store() -> AzureKeyVaultSecretStore:
+    return AzureKeyVaultSecretStore()
+
+
+def get_import_job_repository() -> SqlImportJobRepository:
+    return SqlImportJobRepository()
+
+
+def get_import_job_queue() -> AzureStorageImportJobQueue:
+    return AzureStorageImportJobQueue()
 
 
 @app.route(route="me", methods=["GET"])
@@ -145,6 +171,64 @@ def attach_league(req: func.HttpRequest) -> func.HttpResponse:
         return _error_response(exc)
 
 
+@app.route(route="leagues/{leagueId}/credentials", methods=["POST"])
+def submit_league_credentials(req: func.HttpRequest) -> func.HttpResponse:
+    try:
+        current_user = _authenticate_current_user(req)
+        league_id = _route_param(req, "leagueId")
+        payload = _read_json_object(req)
+        result = CredentialService(
+            repository=get_credential_repository(),
+            secret_store=get_secret_store(),
+        ).submit_espn_credentials(
+            current_user["id"],
+            league_id,
+            payload,
+        )
+        return _json_response(result, 201 if result["created"] else 200)
+    except (
+        AuthenticationError,
+        UserDisabledError,
+        AuthConflictError,
+        CredentialValidationError,
+        LeagueValidationError,
+        LeagueNotFoundError,
+        LeagueAccessDeniedError,
+        CredentialSecretStoreError,
+        SecretStoreConfigurationError,
+    ) as exc:
+        return _error_response(exc)
+
+
+@app.route(route="leagues/{leagueId}/imports", methods=["POST"])
+def create_import(req: func.HttpRequest) -> func.HttpResponse:
+    try:
+        current_user = _authenticate_current_user(req)
+        league_id = _route_param(req, "leagueId")
+        payload = _read_json_object(req)
+        result = ImportJobService(
+            repository=get_import_job_repository(),
+            queue=get_import_job_queue(),
+        ).create_import(
+            current_user["id"],
+            league_id,
+            payload,
+        )
+        return _json_response(result, 202)
+    except (
+        AuthenticationError,
+        UserDisabledError,
+        AuthConflictError,
+        ImportJobValidationError,
+        ImportJobQueueError,
+        LeagueValidationError,
+        LeagueNotFoundError,
+        LeagueAccessDeniedError,
+        QueueConfigurationError,
+    ) as exc:
+        return _error_response(exc)
+
+
 def _json_response(payload: dict[str, Any], status_code: int) -> func.HttpResponse:
     return func.HttpResponse(
         body=json.dumps(payload),
@@ -191,12 +275,25 @@ def _error_response(exc: Exception) -> func.HttpResponse:
         )
     if isinstance(exc, AuthConflictError):
         return _json_response({"error": "conflict", "message": str(exc)}, 409)
-    if isinstance(exc, LeagueValidationError):
+    if isinstance(
+        exc,
+        (LeagueValidationError, CredentialValidationError, ImportJobValidationError),
+    ):
         return _json_response({"error": "bad_request", "message": str(exc)}, 400)
     if isinstance(exc, LeagueNotFoundError):
         return _json_response({"error": "not_found", "message": str(exc)}, 404)
     if isinstance(exc, (LeagueAccessDeniedError, LeagueAttachMismatchError)):
         return _json_response({"error": "forbidden", "message": str(exc)}, 403)
+    if isinstance(
+        exc,
+        (
+            ImportJobQueueError,
+            CredentialSecretStoreError,
+            QueueConfigurationError,
+            SecretStoreConfigurationError,
+        ),
+    ):
+        return _json_response({"error": "service_unavailable", "message": str(exc)}, 503)
     return _json_response(
         {"error": "internal_server_error", "message": "Unexpected server error."},
         500,

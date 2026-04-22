@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.42.1.51946",
-      "templateHash": "7230950618472728938"
+      "templateHash": "11028368117226907533"
     }
   },
   "parameters": {
@@ -1690,11 +1690,8 @@
         },
         "mode": "Incremental",
         "parameters": {
-          "functionPrincipalIds": {
-            "value": [
-              "[reference(resourceId('Microsoft.Resources/deployments', 'apiFunction'), '2025-04-01').outputs.principalId.value]",
-              "[reference(resourceId('Microsoft.Resources/deployments', 'workerFunction'), '2025-04-01').outputs.principalId.value]"
-            ]
+          "apiFunctionPrincipalId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'apiFunction'), '2025-04-01').outputs.principalId.value]"
           },
           "keyVaultAdministratorObjectId": {
             "value": "[parameters('keyVaultAdministratorObjectId')]"
@@ -1710,6 +1707,9 @@
           },
           "tenantId": {
             "value": "[parameters('tenantId')]"
+          },
+          "workerFunctionPrincipalId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'workerFunction'), '2025-04-01').outputs.principalId.value]"
           }
         },
         "template": {
@@ -1719,7 +1719,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.42.1.51946",
-              "templateHash": "13776000082734301910"
+              "templateHash": "2506947817669276892"
             }
           },
           "parameters": {
@@ -1738,32 +1738,20 @@
             "staticWebAppPrincipalId": {
               "type": "string"
             },
-            "functionPrincipalIds": {
-              "type": "array"
+            "apiFunctionPrincipalId": {
+              "type": "string"
+            },
+            "workerFunctionPrincipalId": {
+              "type": "string"
             }
           },
           "variables": {
-            "copy": [
-              {
-                "name": "functionAccessPolicies",
-                "count": "[length(parameters('functionPrincipalIds'))]",
-                "input": {
-                  "objectId": "[parameters('functionPrincipalIds')[copyIndex('functionAccessPolicies')]]",
-                  "permissions": {
-                    "certificates": [],
-                    "keys": [],
-                    "secrets": [
-                      "Get",
-                      "List"
-                    ],
-                    "storage": []
-                  },
-                  "tenantId": "[parameters('tenantId')]"
-                }
-              }
-            ],
             "storageBlobDataContributorRoleId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
             "storageQueueDataContributorRoleId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')]",
+            "functionPrincipalIds": [
+              "[parameters('apiFunctionPrincipalId')]",
+              "[parameters('workerFunctionPrincipalId')]"
+            ],
             "baseAccessPolicies": [
               {
                 "objectId": "[parameters('keyVaultAdministratorObjectId')]",
@@ -1796,20 +1784,47 @@
                 "tenantId": "[parameters('tenantId')]"
               }
             ],
-            "accessPolicies": "[concat(variables('baseAccessPolicies'), variables('functionAccessPolicies'))]"
+            "apiFunctionAccessPolicy": {
+              "objectId": "[parameters('apiFunctionPrincipalId')]",
+              "permissions": {
+                "certificates": [],
+                "keys": [],
+                "secrets": [
+                  "Get",
+                  "List",
+                  "Set"
+                ],
+                "storage": []
+              },
+              "tenantId": "[parameters('tenantId')]"
+            },
+            "workerFunctionAccessPolicy": {
+              "objectId": "[parameters('workerFunctionPrincipalId')]",
+              "permissions": {
+                "certificates": [],
+                "keys": [],
+                "secrets": [
+                  "Get",
+                  "List"
+                ],
+                "storage": []
+              },
+              "tenantId": "[parameters('tenantId')]"
+            },
+            "accessPolicies": "[concat(variables('baseAccessPolicies'), createArray(variables('apiFunctionAccessPolicy'), variables('workerFunctionAccessPolicy')))]"
           },
           "resources": [
             {
               "copy": {
                 "name": "blobRoleAssignments",
-                "count": "[length(parameters('functionPrincipalIds'))]"
+                "count": "[length(variables('functionPrincipalIds'))]"
               },
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2022-04-01",
               "scope": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
-              "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), parameters('functionPrincipalIds')[copyIndex()], variables('storageBlobDataContributorRoleId'))]",
+              "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), variables('functionPrincipalIds')[copyIndex()], variables('storageBlobDataContributorRoleId'))]",
               "properties": {
-                "principalId": "[parameters('functionPrincipalIds')[copyIndex()]]",
+                "principalId": "[variables('functionPrincipalIds')[copyIndex()]]",
                 "principalType": "ServicePrincipal",
                 "roleDefinitionId": "[variables('storageBlobDataContributorRoleId')]"
               }
@@ -1817,14 +1832,14 @@
             {
               "copy": {
                 "name": "queueRoleAssignments",
-                "count": "[length(parameters('functionPrincipalIds'))]"
+                "count": "[length(variables('functionPrincipalIds'))]"
               },
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2022-04-01",
               "scope": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
-              "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), parameters('functionPrincipalIds')[copyIndex()], variables('storageQueueDataContributorRoleId'))]",
+              "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), variables('functionPrincipalIds')[copyIndex()], variables('storageQueueDataContributorRoleId'))]",
               "properties": {
-                "principalId": "[parameters('functionPrincipalIds')[copyIndex()]]",
+                "principalId": "[variables('functionPrincipalIds')[copyIndex()]]",
                 "principalType": "ServicePrincipal",
                 "roleDefinitionId": "[variables('storageQueueDataContributorRoleId')]"
               }

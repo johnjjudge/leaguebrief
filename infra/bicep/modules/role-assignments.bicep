@@ -3,7 +3,8 @@ param keyVaultName string
 param tenantId string
 param keyVaultAdministratorObjectId string
 param staticWebAppPrincipalId string
-param functionPrincipalIds array
+param apiFunctionPrincipalId string
+param workerFunctionPrincipalId string
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' existing = {
   name: storageAccountName
@@ -15,6 +16,10 @@ resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = {
 
 var storageBlobDataContributorRoleId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
 var storageQueueDataContributorRoleId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')
+var functionPrincipalIds = [
+  apiFunctionPrincipalId
+  workerFunctionPrincipalId
+]
 
 resource blobRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for principalId in functionPrincipalIds: {
   name: guid(storageAccount.id, principalId, storageBlobDataContributorRoleId)
@@ -69,8 +74,23 @@ var baseAccessPolicies = [
   }
 ]
 
-var functionAccessPolicies = [for principalId in functionPrincipalIds: {
-  objectId: principalId
+var apiFunctionAccessPolicy = {
+  objectId: apiFunctionPrincipalId
+  permissions: {
+    certificates: []
+    keys: []
+    secrets: [
+      'Get'
+      'List'
+      'Set'
+    ]
+    storage: []
+  }
+  tenantId: tenantId
+}
+
+var workerFunctionAccessPolicy = {
+  objectId: workerFunctionPrincipalId
   permissions: {
     certificates: []
     keys: []
@@ -81,9 +101,12 @@ var functionAccessPolicies = [for principalId in functionPrincipalIds: {
     storage: []
   }
   tenantId: tenantId
-}]
+}
 
-var accessPolicies = concat(baseAccessPolicies, functionAccessPolicies)
+var accessPolicies = concat(baseAccessPolicies, [
+  apiFunctionAccessPolicy
+  workerFunctionAccessPolicy
+])
 
 resource keyVaultAccessPolicies 'Microsoft.KeyVault/vaults/accessPolicies@2024-11-01' = {
   parent: keyVault

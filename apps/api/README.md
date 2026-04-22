@@ -10,6 +10,8 @@ Required local values:
 
 - `FUNCTIONS_WORKER_RUNTIME`: must be `python`
 - `AzureWebJobsStorage`: Azure Storage connection string, or `UseDevelopmentStorage=true` when Azurite is running
+- `IMPORT_JOBS_QUEUE_NAME`: queue name for import jobs, normally `import-jobs`
+- `KEY_VAULT_URI`: Key Vault URI used for private ESPN credential storage
 - `LEAGUEBRIEF_ENVIRONMENT`: local environment label such as `local`, `dev`, or `prod`
 - `SQL_CONNECTION_STRING`: optional full pyodbc connection string
 - `SQL_SERVER_FQDN`, `SQL_DATABASE_NAME`, `SQL_ADMIN_LOGIN`, `SQL_ADMIN_PASSWORD`: used when `SQL_CONNECTION_STRING` is not set
@@ -44,8 +46,19 @@ python -m leaguebrief.db.migrate
 - `POST /api/leagues`
 - `GET /api/leagues/{leagueId}`
 - `POST /api/leagues/{leagueId}/attach`
+- `POST /api/leagues/{leagueId}/credentials`
+- `POST /api/leagues/{leagueId}/imports`
 
 For local tests, use the Static Web Apps CLI auth emulator or construct the header manually.
+
+`POST /api/leagues/{leagueId}/credentials` accepts ESPN cookie fields as `espnS2`
+or `espn_s2`, and `swid` or `SWID`. The API writes the raw cookie values to Key
+Vault and stores only secret reference names in SQL.
+
+`POST /api/leagues/{leagueId}/imports` creates an `import_jobs` row and sends one
+queue message to `IMPORT_JOBS_QUEUE_NAME`. Supported `jobType` values are
+`initial_import`, `attach_existing_league`, `refresh_current_data`,
+`recompute_metrics`, and `ingest_fantasypros`.
 
 ## Test
 

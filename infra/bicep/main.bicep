@@ -382,15 +382,13 @@ module workerFunction './modules/functionapp-flex.bicep' = {
 module roleAssignments './modules/role-assignments.bicep' = {
   name: 'roleAssignments'
   params: {
-    functionPrincipalIds: [
-      apiFunction.outputs.principalId
-      workerFunction.outputs.principalId
-    ]
+    apiFunctionPrincipalId: apiFunction.outputs.principalId
     keyVaultAdministratorObjectId: keyVaultAdministratorObjectId
     keyVaultName: keyVault.outputs.name
     staticWebAppPrincipalId: staticWebApp.outputs.principalId
     storageAccountName: storage.outputs.accountName
     tenantId: tenantId
+    workerFunctionPrincipalId: workerFunction.outputs.principalId
   }
 }
 

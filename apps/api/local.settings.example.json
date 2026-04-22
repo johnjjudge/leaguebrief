@@ -6,6 +6,8 @@
     "LEAGUEBRIEF_ENVIRONMENT": "local",
     "APP_KIND": "api",
     "FUNCTION_APP_ROLE": "api",
+    "IMPORT_JOBS_QUEUE_NAME": "import-jobs",
+    "KEY_VAULT_URI": "",
     "SQL_CONNECTION_STRING": "",
     "SQL_ODBC_DRIVER": "ODBC Driver 18 for SQL Server",
     "SQL_SERVER_FQDN": "",

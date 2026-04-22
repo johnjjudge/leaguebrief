@@ -1,0 +1,1 @@
+"""LeagueBrief worker package."""

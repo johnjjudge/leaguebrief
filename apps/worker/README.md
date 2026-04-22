@@ -1,6 +1,6 @@
 # LeagueBrief Worker
 
-Minimal Azure Functions queue-worker shell for LeagueBrief.
+Azure Functions queue worker for LeagueBrief import jobs.
 
 ## Local settings
 
@@ -12,8 +12,14 @@ Required local values:
 - `AzureWebJobsStorage`: Azure Storage connection string, or `UseDevelopmentStorage=true` when Azurite is running
 - `IMPORT_JOBS_QUEUE_NAME`: queue name for import jobs, normally `import-jobs`
 - `LEAGUEBRIEF_ENVIRONMENT`: local environment label such as `local`, `dev`, or `prod`
+- `SQL_CONNECTION_STRING`: optional full pyodbc connection string
+- `SQL_SERVER_FQDN`, `SQL_DATABASE_NAME`, `SQL_ADMIN_LOGIN`, `SQL_ADMIN_PASSWORD`: used when `SQL_CONNECTION_STRING` is not set
+- `SQL_ODBC_DRIVER`: optional driver override; defaults to `ODBC Driver 18 for SQL Server`
 
-The deployed Function App receives additional settings from Bicep, including storage container names, Key Vault references, and SQL placeholders. This phase-2 shell intentionally does not use auth, Key Vault, SQL, or ESPN settings yet.
+The queue trigger is configured with `maxDequeueCount = 3`. Failed worker
+attempts below the retry limit are re-raised for Queue Storage retry. The third
+failed attempt marks the SQL `import_jobs` row as `failed` and records a
+`job_events` entry.
 
 ## Run locally
 

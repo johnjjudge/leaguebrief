@@ -1,2 +1,5 @@
 azure-functions==1.21.3
+azure-identity==1.17.1
+azure-keyvault-secrets==4.8.0
+azure-storage-queue==12.9.0
 pyodbc==5.3.0

@@ -6,6 +6,12 @@
     "IMPORT_JOBS_QUEUE_NAME": "import-jobs",
     "LEAGUEBRIEF_ENVIRONMENT": "local",
     "APP_KIND": "worker",
-    "FUNCTION_APP_ROLE": "worker"
+    "FUNCTION_APP_ROLE": "worker",
+    "SQL_CONNECTION_STRING": "",
+    "SQL_ODBC_DRIVER": "ODBC Driver 18 for SQL Server",
+    "SQL_SERVER_FQDN": "",
+    "SQL_DATABASE_NAME": "",
+    "SQL_ADMIN_LOGIN": "",
+    "SQL_ADMIN_PASSWORD": ""
   }
 }
