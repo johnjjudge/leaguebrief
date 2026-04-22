@@ -65,7 +65,7 @@ class SqlWorkerJobRepository:
             UPDATE dbo.import_jobs
             SET
                 status = N'running',
-                current_phase = N'finalize',
+                current_phase = N'fetch',
                 started_at = COALESCE(started_at, ?),
                 last_heartbeat_at = ?
             WHERE id = ?
@@ -73,6 +73,30 @@ class SqlWorkerJobRepository:
             """,
             now,
             now,
+            job_id,
+        )
+
+    def mark_partial_success(
+        self,
+        job_id: str,
+        error_summary: str,
+        now: datetime,
+    ) -> None:
+        self._update_job(
+            """
+            UPDATE dbo.import_jobs
+            SET
+                status = N'partial_success',
+                current_phase = N'finalize',
+                completed_at = ?,
+                last_heartbeat_at = ?,
+                error_summary = ?
+            WHERE id = ?
+              AND status NOT IN (N'succeeded', N'failed', N'cancelled')
+            """,
+            now,
+            now,
+            error_summary,
             job_id,
         )
 

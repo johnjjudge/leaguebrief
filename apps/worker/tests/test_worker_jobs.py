@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
-from leaguebrief_worker.jobs import WorkerJobFailed, WorkerService
+from leaguebrief_worker.jobs import WorkerJobFailed, WorkerRunResult, WorkerService
 
 
 class _InMemoryWorkerJobRepository:
@@ -34,13 +34,19 @@ class _InMemoryWorkerJobRepository:
 
     def mark_running(self, job_id: str, now: datetime) -> None:
         self.status = "running"
-        self.current_phase = "finalize"
+        self.current_phase = "fetch"
 
     def mark_succeeded(self, job_id: str, now: datetime) -> None:
         self.status = "succeeded"
         self.current_phase = "finalize"
         self.completed_at = now
         self.error_summary = None
+
+    def mark_partial_success(self, job_id: str, error_summary: str, now: datetime) -> None:
+        self.status = "partial_success"
+        self.current_phase = "finalize"
+        self.completed_at = now
+        self.error_summary = error_summary
 
     def mark_failed(self, job_id: str, error_summary: str, now: datetime) -> None:
         self.status = "failed"
@@ -63,6 +69,22 @@ def test_worker_transitions_job_through_validating_running_succeeded():
         "job_validating",
         "job_running",
         "job_succeeded",
+    ]
+
+
+def test_partial_run_result_marks_job_partial_success():
+    repository = _InMemoryWorkerJobRepository()
+    service = WorkerService(repository, run_job=_partial_job)
+
+    service.process_message(json.dumps(_message()), dequeue_count=1, now=_now())
+
+    assert repository.status == "partial_success"
+    assert repository.error_summary == "Import job completed with partial success."
+    assert _event_types(repository) == [
+        "job_attempted",
+        "job_validating",
+        "job_running",
+        "job_partial_success",
     ]
 
 
@@ -123,6 +145,10 @@ def _message():
 
 def _failing_job(message):
     raise RuntimeError("synthetic failure")
+
+
+def _partial_job(message):
+    return WorkerRunResult.partial(payload={"optionalFailureCount": 1})
 
 
 def _now() -> datetime:

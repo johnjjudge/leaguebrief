@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from typing import Protocol
 from uuid import UUID
 
-TERMINAL_JOB_STATUSES = {"succeeded", "failed", "cancelled"}
+TERMINAL_JOB_STATUSES = {"succeeded", "partial_success", "failed", "cancelled"}
 DEFAULT_MAX_ATTEMPTS = 3
 
 
@@ -34,6 +34,25 @@ class ImportJobMessage:
     enqueued_at: str
 
 
+@dataclass(frozen=True)
+class WorkerRunResult:
+    partial_success: bool = False
+    message: str = "Import job completed."
+    payload: Mapping[str, object] | None = None
+
+    @classmethod
+    def succeeded(cls) -> WorkerRunResult:
+        return cls()
+
+    @classmethod
+    def partial(
+        cls,
+        message: str = "Import job completed with partial success.",
+        payload: Mapping[str, object] | None = None,
+    ) -> WorkerRunResult:
+        return cls(partial_success=True, message=message, payload=payload)
+
+
 class WorkerJobRepository(Protocol):
     def get_job_status(self, job_id: str) -> str | None:
         ...
@@ -57,6 +76,14 @@ class WorkerJobRepository(Protocol):
     def mark_succeeded(self, job_id: str, now: datetime) -> None:
         ...
 
+    def mark_partial_success(
+        self,
+        job_id: str,
+        error_summary: str,
+        now: datetime,
+    ) -> None:
+        ...
+
     def mark_failed(self, job_id: str, error_summary: str, now: datetime) -> None:
         ...
 
@@ -65,7 +92,7 @@ class WorkerService:
     def __init__(
         self,
         repository: WorkerJobRepository,
-        run_job: Callable[[ImportJobMessage], None] | None = None,
+        run_job: Callable[[ImportJobMessage], WorkerRunResult | None] | None = None,
         max_attempts: int = DEFAULT_MAX_ATTEMPTS,
     ) -> None:
         self._repository = repository
@@ -119,15 +146,29 @@ class WorkerService:
                 None,
                 timestamp,
             )
-            self._run_job(job_message)
-            self._repository.mark_succeeded(job_message.job_id, timestamp)
-            self._repository.append_event(
-                job_message.job_id,
-                "job_succeeded",
-                "Import job succeeded.",
-                None,
-                timestamp,
-            )
+            result = self._run_job(job_message) or WorkerRunResult.succeeded()
+            if result.partial_success:
+                self._repository.mark_partial_success(
+                    job_message.job_id,
+                    result.message,
+                    timestamp,
+                )
+                self._repository.append_event(
+                    job_message.job_id,
+                    "job_partial_success",
+                    result.message,
+                    result.payload,
+                    timestamp,
+                )
+            else:
+                self._repository.mark_succeeded(job_message.job_id, timestamp)
+                self._repository.append_event(
+                    job_message.job_id,
+                    "job_succeeded",
+                    "Import job succeeded.",
+                    None,
+                    timestamp,
+                )
         except Exception as exc:
             if dequeue_count >= self._max_attempts:
                 self._repository.mark_failed(
@@ -208,5 +249,5 @@ def _parse_requested_seasons(value: object) -> tuple[int, ...] | None:
     return tuple(seasons)
 
 
-def _noop_run_job(message: ImportJobMessage) -> None:
-    return None
+def _noop_run_job(message: ImportJobMessage) -> WorkerRunResult:
+    return WorkerRunResult.succeeded()

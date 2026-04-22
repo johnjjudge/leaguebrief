@@ -4,6 +4,8 @@
     "FUNCTIONS_WORKER_RUNTIME": "python",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "IMPORT_JOBS_QUEUE_NAME": "import-jobs",
+    "STORAGE_RAW_ESPN_CONTAINER": "raw-espn",
+    "KEY_VAULT_URI": "",
     "LEAGUEBRIEF_ENVIRONMENT": "local",
     "APP_KIND": "worker",
     "FUNCTION_APP_ROLE": "worker",

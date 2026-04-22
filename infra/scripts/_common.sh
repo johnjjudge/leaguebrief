@@ -240,9 +240,12 @@ package_python_function_app() {
 
   if [[ -s "$source_dir/requirements.txt" ]]; then
     mkdir -p "$package_dir/.python_packages/lib/site-packages"
-    "$venv_dir/bin/pip" install \
-      --requirement "$source_dir/requirements.txt" \
-      --target "$package_dir/.python_packages/lib/site-packages"
+    (
+      cd "$source_dir"
+      "$venv_dir/bin/pip" install \
+        --requirement requirements.txt \
+        --target "$package_dir/.python_packages/lib/site-packages"
+    )
   fi
 
   rm -f "$zip_path"

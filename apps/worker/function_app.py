@@ -2,14 +2,37 @@ import logging
 import os
 
 import azure.functions as func
+from leaguebrief_espn_adapter import EspnFantasyClient
+from leaguebrief_worker.blobs import AzureBlobRawPayloadStore
 from leaguebrief_worker.db.jobs import SqlWorkerJobRepository
-from leaguebrief_worker.jobs import WorkerService
+from leaguebrief_worker.db.raw_snapshots import SqlRawSnapshotRepository
+from leaguebrief_worker.ingestion import (
+    ESPN_RAW_INGESTION_JOB_TYPES,
+    EspnRawIngestionService,
+)
+from leaguebrief_worker.jobs import ImportJobMessage, WorkerRunResult, WorkerService
+from leaguebrief_worker.secrets import AzureKeyVaultSecretReader
 
 app = func.FunctionApp()
 
 
 def get_worker_job_repository() -> SqlWorkerJobRepository:
     return SqlWorkerJobRepository()
+
+
+def get_espn_raw_ingestion_service() -> EspnRawIngestionService:
+    return EspnRawIngestionService(
+        repository=SqlRawSnapshotRepository(),
+        blob_store=AzureBlobRawPayloadStore(),
+        secret_reader=AzureKeyVaultSecretReader(),
+        client_factory=EspnFantasyClient,
+    )
+
+
+def run_import_job(message: ImportJobMessage) -> WorkerRunResult:
+    if message.job_type not in ESPN_RAW_INGESTION_JOB_TYPES:
+        return WorkerRunResult.succeeded()
+    return get_espn_raw_ingestion_service().run(message)
 
 
 @app.queue_trigger(
@@ -32,7 +55,7 @@ def import_job_worker(message: func.QueueMessage) -> None:
         },
     )
 
-    WorkerService(get_worker_job_repository()).process_message(
+    WorkerService(get_worker_job_repository(), run_job=run_import_job).process_message(
         message.get_body(),
         dequeue_count=dequeue_count,
     )
