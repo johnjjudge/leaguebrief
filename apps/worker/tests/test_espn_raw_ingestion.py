@@ -112,12 +112,6 @@ class _FakeEspnClient:
             raise EspnNotFoundError("not found")
         return _response(league_id, season, "draft", {"draftDetail": {}})
 
-    def fetch_transactions(self, league_id, season, credentials):
-        self.calls.append(("transactions", league_id, season, credentials.espn_s2 if credentials else None))
-        if "transactions" in self.unavailable:
-            raise EspnNotFoundError("not found")
-        return _response(league_id, season, "transactions", {"transactions": []})
-
     def fetch_rosters(self, league_id, season, scoring_period_ids, credentials):
         self.calls.append(
             (
@@ -168,7 +162,6 @@ def test_ingestion_uses_requested_seasons_credentials_and_persists_raw_snapshots
         "league_meta",
         "matchups",
         "rosters",
-        "transactions",
     ]
     assert set(blob_store.uploads) == {snapshot["blob_path"] for snapshot in repository.snapshots}
     assert all(path.startswith(f"espn/{league.id}/2022/") for path in blob_store.uploads)
@@ -202,16 +195,16 @@ def test_optional_snapshot_failures_return_partial_success():
         repository=repository,
         blob_store=blob_store,
         secret_reader=_FakeSecretReader({}),
-        client_factory=lambda: _FakeEspnClient(unavailable={"draft", "rosters", "transactions"}),
+        client_factory=lambda: _FakeEspnClient(unavailable={"draft", "rosters"}),
     )
 
     result = service.run(_message(league.id, requested_seasons=(2022,)), now=_now())
 
     assert result.partial_success
     assert result.payload is not None
-    assert len(result.payload["optionalFailures"]) == 3
+    assert len(result.payload["optionalFailures"]) == 2
     failed_tasks = [task for task in repository.tasks.values() if task["status"] == "failed"]
-    assert len(failed_tasks) == 3
+    assert len(failed_tasks) == 2
     assert sorted(snapshot["snapshot_type"] for snapshot in repository.snapshots) == [
         "league_meta",
         "matchups",

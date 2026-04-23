@@ -13,6 +13,7 @@ SUPPORTED_IMPORT_JOB_TYPES = {
     "refresh_current_data",
     "recompute_metrics",
     "ingest_fantasypros",
+    "normalize_raw_snapshots",
 }
 MAX_REASONABLE_PRIORITY = 100
 MIN_REASONABLE_PRIORITY = -100

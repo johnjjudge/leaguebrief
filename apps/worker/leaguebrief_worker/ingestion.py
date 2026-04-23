@@ -193,19 +193,6 @@ class EspnRawIngestionService:
                 message=message,
                 league=league,
                 season=season,
-                snapshot_type="transactions",
-                task_type="fetch_season",
-                fetch=lambda season=season: client.fetch_transactions(
-                    league.external_league_id,
-                    season,
-                    credentials,
-                ),
-                failures=optional_failures,
-            )
-            self._fetch_store_optional(
-                message=message,
-                league=league,
-                season=season,
                 snapshot_type="rosters",
                 task_type="fetch_season",
                 fetch=lambda season=season, meta=meta: client.fetch_rosters(

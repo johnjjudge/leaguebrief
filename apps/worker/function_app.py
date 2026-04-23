@@ -5,6 +5,7 @@ import azure.functions as func
 from leaguebrief_espn_adapter import EspnFantasyClient
 from leaguebrief_worker.blobs import AzureBlobRawPayloadStore
 from leaguebrief_worker.db.jobs import SqlWorkerJobRepository
+from leaguebrief_worker.db.normalization import SqlRawSnapshotNormalizationRepository
 from leaguebrief_worker.db.raw_snapshots import SqlRawSnapshotRepository
 from leaguebrief_worker.db.references import SqlFantasyProsReferenceRepository
 from leaguebrief_worker.fantasypros import (
@@ -16,6 +17,10 @@ from leaguebrief_worker.ingestion import (
     EspnRawIngestionService,
 )
 from leaguebrief_worker.jobs import ImportJobMessage, WorkerRunResult, WorkerService
+from leaguebrief_worker.normalization import (
+    NORMALIZE_RAW_SNAPSHOTS_JOB_TYPES,
+    RawSnapshotNormalizationService,
+)
 from leaguebrief_worker.secrets import AzureKeyVaultSecretReader
 
 app = func.FunctionApp()
@@ -38,11 +43,21 @@ def get_fantasypros_ingestion_service() -> FantasyProsIngestionService:
     return FantasyProsIngestionService(repository=SqlFantasyProsReferenceRepository())
 
 
+def get_raw_snapshot_normalization_service() -> RawSnapshotNormalizationService:
+    return RawSnapshotNormalizationService(
+        repository=SqlRawSnapshotNormalizationRepository(),
+        blob_store=AzureBlobRawPayloadStore(),
+        fantasypros_selector=SqlFantasyProsReferenceRepository(),
+    )
+
+
 def run_import_job(message: ImportJobMessage) -> WorkerRunResult:
     if message.job_type in ESPN_RAW_INGESTION_JOB_TYPES:
         return get_espn_raw_ingestion_service().run(message)
     if message.job_type in FANTASYPROS_INGESTION_JOB_TYPES:
         return get_fantasypros_ingestion_service().run(message)
+    if message.job_type in NORMALIZE_RAW_SNAPSHOTS_JOB_TYPES:
+        return get_raw_snapshot_normalization_service().run(message)
     return WorkerRunResult.succeeded()
 
 

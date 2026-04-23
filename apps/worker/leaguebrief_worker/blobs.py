@@ -49,3 +49,10 @@ class AzureBlobRawPayloadStore:
                 content_type="application/json; charset=utf-8"
             ),
         )
+
+    def download_json_bytes(self, blob_path: str) -> bytes:
+        blob_client = self._client.get_blob_client(
+            container=self._container_name,
+            blob=blob_path,
+        )
+        return blob_client.download_blob().readall()

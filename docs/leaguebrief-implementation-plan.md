@@ -602,7 +602,7 @@ Use /plan first.
 
 Implement LeagueBrief normalization from raw snapshots into canonical relational tables.
 Requirements:
-- upsert seasons, season_data_coverage, managers, teams, matchups, drafts, draft_picks, and transactions as available
+- upsert seasons, season_data_coverage, managers, teams, matchups, drafts, and draft_picks as available
 - preserve league and season uniqueness
 - update completeness and freshness markers
 Acceptance criteria:
@@ -610,6 +610,17 @@ Acceptance criteria:
 - duplicate rows are not created
 - shared league data remains canonical across users
 ```
+
+Implementation note: normalization runs as a separate `normalize_raw_snapshots`
+job. It reads current ESPN raw snapshots from Blob Storage, requires
+`league_meta` and `matchups`, treats draft/rosters/reference
+rankings as optional coverage inputs, and upserts shared league data using SQL
+natural keys plus source-key uniqueness for matchups. ESPN
+draft payloads may contain only player IDs, so draft pick normalization resolves
+player names from roster/matchup player payloads when available and preserves
+unresolved picks with deterministic `ESPN Player {id}` names.
+Transaction ingestion and transaction-derived analytics are out of MVP scope
+because ESPN does not reliably expose useful historical transaction data.
 
 ---
 

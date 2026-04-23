@@ -578,6 +578,29 @@ def test_create_import_creates_job_and_queue_message(monkeypatch):
     assert "key_vault" not in json.dumps(job_queue.messages[0])
 
 
+def test_create_import_accepts_normalize_raw_snapshots_job(monkeypatch):
+    _, league_repository = _patch_repositories(monkeypatch)
+    job_repository, job_queue = _patch_import_job_dependencies(monkeypatch, league_repository)
+    create_response = function_app.create_league(
+        _request("user-one", _league_body("111", name="Private League"))
+    )
+    league_id = json.loads(create_response.get_body())["league"]["id"]
+
+    response = function_app.create_import(
+        _request(
+            "user-one",
+            {"jobType": "normalize_raw_snapshots", "requestedSeasons": [2024]},
+            {"leagueId": league_id},
+        )
+    )
+
+    payload = json.loads(response.get_body())
+    assert response.status_code == 202
+    assert payload["job"]["jobType"] == "normalize_raw_snapshots"
+    assert job_repository.jobs[payload["job"]["id"]].job_type == "normalize_raw_snapshots"
+    assert job_queue.messages[0]["jobType"] == "normalize_raw_snapshots"
+
+
 def test_create_import_rejects_unsupported_job_type(monkeypatch):
     _, league_repository = _patch_repositories(monkeypatch)
     _patch_import_job_dependencies(monkeypatch, league_repository)

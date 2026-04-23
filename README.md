@@ -11,11 +11,13 @@ The deployable app components live under:
 - `apps/worker`: Python Azure Functions queue worker bound to `IMPORT_JOBS_QUEUE_NAME`.
 - `packages/espn-adapter`: isolated Python ESPN fantasy API adapter used by the worker.
 - `packages/fantasypros-adapter`: isolated Python FantasyPros CSV adapter used by the worker.
+- `packages/espn-normalizer`: isolated Python ESPN raw snapshot normalizer used by the worker.
 
 The current app implements the auth, schema, league onboarding, private
 credential, async import job foundations, ESPN raw ingestion, and FantasyPros
-reference CSV ingestion. It does not implement normalization or analytics
-dashboards yet.
+reference CSV ingestion. It also includes a separate raw snapshot normalization
+job for shared season/team/matchup/draft tables. It does not
+implement analytics dashboards yet.
 
 ## Local app development
 

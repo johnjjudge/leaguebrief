@@ -30,6 +30,18 @@ write canonical JSON payloads to the `raw-espn` blob container, and create
 SQL and retrieves the raw `espn_s2`/`SWID` values from Key Vault; raw credential
 values are not stored in SQL or logged.
 
+`normalize_raw_snapshots` jobs read the current raw ESPN blobs and upsert shared
+canonical SQL rows for seasons, coverage, managers, teams, matchups, weekly
+actual scores, drafts, and draft picks. This job is separate from
+raw ESPN fetch jobs. It uses `normalize_season` job tasks, requires current
+`league_meta` and `matchups` snapshots per season, and treats draft,
+rosters, and FantasyPros rankings as optional coverage inputs. ESPN transaction
+ingestion is intentionally out of MVP scope because the useful historical
+transaction feed is not reliably available.
+For ESPN draft payloads that only include player IDs, the normalizer resolves
+names from roster/matchup player payloads when available and otherwise keeps the
+pick with a deterministic `ESPN Player {id}` fallback name.
+
 `ingest_fantasypros` jobs read the packaged static CSV files in
 `apps/worker/adpreferences` and persist durable reference rows to SQL. These
 CSV files are not copied to Blob Storage; `reference_files.blob_path` stores the

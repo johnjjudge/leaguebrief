@@ -708,7 +708,7 @@ Tracks raw ESPN payloads stored in Blob Storage.
 - `id` (uuid, pk)
 - `league_id` (fk `leagues.id`)
 - `season`
-- `snapshot_type` (`league_meta`, `draft`, `matchups`, `rosters`, `transactions`)
+- `snapshot_type` (`league_meta`, `draft`, `matchups`, `rosters`)
 - `blob_path`
 - `source_hash`
 - `is_current` (bool)
@@ -757,7 +757,6 @@ Tracks which data domains are present for a season.
 - `season_id` (fk `seasons.id`)
 - `has_draft_data` (bool)
 - `has_matchup_data` (bool)
-- `has_transaction_data` (bool)
 - `has_roster_data` (bool)
 - `has_reference_rankings` (bool)
 - `last_validated_at`
@@ -805,6 +804,7 @@ All season matchups.
 
 - `id` (uuid, pk)
 - `season_id` (fk `seasons.id`)
+- `source_key`
 - `week_number`
 - `matchup_type` (`regular`, `playoff`)
 - `home_team_id` (fk `teams.id`)
@@ -863,18 +863,6 @@ All picks in a season’s draft.
 
 **Constraints**
 - recommended: `UNIQUE(draft_id, overall_pick)`
-
-#### `transactions`
-Optional but useful for waiver analytics.
-
-- `id` (uuid, pk)
-- `season_id` (fk `seasons.id`)
-- `team_id` (fk `teams.id`, nullable)
-- `week_number`
-- `transaction_type` (`add`, `drop`, `trade`, `waiver`)
-- `player_name`
-- `player_external_id`
-- `created_at_source`
 
 ### 18.7 Reference ranking tables
 
@@ -978,7 +966,6 @@ Season-specific team analytics.
 - luck index
 - all-play record
 - rivalry record
-- waiver activity count
 - best picks / worst picks
 
 ---
@@ -1041,6 +1028,7 @@ stateDiagram-v2
 - `refresh_current_data`
 - `recompute_metrics`
 - `ingest_fantasypros`
+- `normalize_raw_snapshots`
 
 MVP season selection is limited to 2015 and later because the packaged
 FantasyPros reference files start with the 2015 season. Half-PPR reference

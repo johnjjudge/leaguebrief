@@ -52,10 +52,13 @@ class _FakeCursor:
 def test_discover_migrations_finds_mvp_schema():
     migrations = discover_migrations()
 
-    assert [migration.version for migration in migrations] == ["0001"]
+    assert [migration.version for migration in migrations] == ["0001", "0002"]
     assert migrations[0].description == "mvp_schema"
     assert migrations[0].path.name == "0001_mvp_schema.sql"
     assert len(migrations[0].checksum) == 64
+    assert migrations[1].description == "normalization_idempotency"
+    assert migrations[1].path.name == "0002_normalization_idempotency.sql"
+    assert len(migrations[1].checksum) == 64
 
 
 def test_split_sql_batches_uses_go_separator():
@@ -127,6 +130,18 @@ def test_mvp_schema_contains_required_tables_and_constraints():
     assert "UX_metric_definitions_name_version" in migration_sql
 
 
+def test_normalization_idempotency_migration_adds_job_type_and_indexes():
+    migration_sql = (
+        DEFAULT_MIGRATIONS_DIR / "0002_normalization_idempotency.sql"
+    ).read_text(encoding="utf-8")
+
+    assert "N'normalize_raw_snapshots'" in migration_sql
+    assert "ADD source_key NVARCHAR(256) NULL" in migration_sql
+    assert "UX_matchups_season_source_key" in migration_sql
+    assert "UX_transactions_season_source_key" in migration_sql
+    assert "WHERE source_key IS NOT NULL" in migration_sql
+
+
 @pytest.mark.sql_integration
 def test_live_sql_migrations_run_successfully(live_sql_database):
     with live_sql_database.managed_connection() as connection:
@@ -135,7 +150,8 @@ def test_live_sql_migrations_run_successfully(live_sql_database):
             """
             SELECT version
             FROM dbo.schema_migrations
-            WHERE version = N'0001'
+            WHERE version IN (N'0001', N'0002')
+            ORDER BY version
             """
         ).fetchall()
         rows = cursor.execute(
@@ -144,12 +160,16 @@ def test_live_sql_migrations_run_successfully(live_sql_database):
             FROM sys.indexes
             WHERE name IN (
                 'UX_leagues_platform_external_league_id',
-                'UX_auth_provider_accounts_provider_subject'
+                'UX_auth_provider_accounts_provider_subject',
+                'UX_matchups_season_source_key',
+                'UX_transactions_season_source_key'
             )
             """
         ).fetchall()
         assert {row[0] for row in rows} == {
             "UX_leagues_platform_external_league_id",
             "UX_auth_provider_accounts_provider_subject",
+            "UX_matchups_season_source_key",
+            "UX_transactions_season_source_key",
         }
-        assert [row[0] for row in applied_rows] == ["0001"]
+        assert [row[0] for row in applied_rows] == ["0001", "0002"]

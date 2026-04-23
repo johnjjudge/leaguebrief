@@ -18,7 +18,6 @@ SNAPSHOT_VIEWS: Mapping[str, tuple[str, ...]] = {
     "league_meta": ("mSettings", "mStatus", "mTeam"),
     "draft": ("mDraftDetail",),
     "matchups": ("mMatchup", "mMatchupScore", "mSchedule", "mScoreboard"),
-    "transactions": ("mTransactions2",),
     "rosters": ("mRoster",),
 }
 
@@ -170,21 +169,6 @@ class EspnFantasyClient:
                 league_id=league_id,
                 season=season,
                 snapshot_type="matchups",
-            ),
-            credentials,
-        )
-
-    def fetch_transactions(
-        self,
-        league_id: str,
-        season: int,
-        credentials: EspnCredentials | None = None,
-    ) -> EspnSnapshotResponse:
-        return self.fetch_snapshot(
-            EspnSnapshotRequest(
-                league_id=league_id,
-                season=season,
-                snapshot_type="transactions",
             ),
             credentials,
         )

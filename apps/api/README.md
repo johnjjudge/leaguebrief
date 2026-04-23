@@ -58,9 +58,9 @@ Vault and stores only secret reference names in SQL.
 `POST /api/leagues/{leagueId}/imports` creates an `import_jobs` row and sends one
 queue message to `IMPORT_JOBS_QUEUE_NAME`. Supported `jobType` values are
 `initial_import`, `attach_existing_league`, `refresh_current_data`,
-`recompute_metrics`, and `ingest_fantasypros`. MVP import season selection is
-limited to 2015 and later because the packaged FantasyPros references start in
-2015.
+`recompute_metrics`, `ingest_fantasypros`, and `normalize_raw_snapshots`. MVP
+import season selection is limited to 2015 and later because the packaged
+FantasyPros references start in 2015.
 
 ## Test
 
