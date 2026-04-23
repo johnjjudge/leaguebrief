@@ -15,7 +15,11 @@ from leaguebrief_espn_adapter import (
     EspnSnapshotResponse,
 )
 
-from leaguebrief_worker.jobs import ImportJobMessage, WorkerRunResult
+from leaguebrief_worker.jobs import (
+    MIN_SUPPORTED_IMPORT_SEASON,
+    ImportJobMessage,
+    WorkerRunResult,
+)
 
 ESPN_RAW_INGESTION_JOB_TYPES = {"initial_import", "refresh_current_data"}
 MAX_SCORING_PERIODS = 25
@@ -258,14 +262,14 @@ class EspnRawIngestionService:
         credentials: EspnCredentials | None,
     ) -> tuple[int, ...]:
         if message.requested_seasons:
-            return tuple(sorted(set(message.requested_seasons)))
+            return _supported_seasons(tuple(sorted(set(message.requested_seasons))))
         if league.first_season is not None and league.last_season is not None:
             if league.first_season > league.last_season:
                 raise EspnRawIngestionError("League season range is invalid.")
-            return tuple(range(league.first_season, league.last_season + 1))
+            return _supported_seasons(tuple(range(league.first_season, league.last_season + 1)))
 
         try:
-            return client.discover_seasons(league.external_league_id, credentials)
+            return _supported_seasons(client.discover_seasons(league.external_league_id, credentials))
         except EspnAdapterError as exc:
             raise EspnRawIngestionError("Unable to discover ESPN league seasons.") from exc
 
@@ -433,3 +437,10 @@ def _safe_task_error_message(snapshot_type: str, required: bool) -> str:
     if required:
         return f"Required ESPN {snapshot_type} snapshot failed."
     return f"Optional ESPN {snapshot_type} snapshot was unavailable."
+
+
+def _supported_seasons(seasons: Sequence[int]) -> tuple[int, ...]:
+    supported = tuple(season for season in seasons if season >= MIN_SUPPORTED_IMPORT_SEASON)
+    if not supported:
+        raise EspnRawIngestionError("No supported seasons were requested for import.")
+    return supported

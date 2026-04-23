@@ -594,6 +594,26 @@ def test_create_import_rejects_unsupported_job_type(monkeypatch):
     assert json.loads(response.get_body())["error"] == "bad_request"
 
 
+def test_create_import_rejects_pre_2015_requested_season(monkeypatch):
+    _, league_repository = _patch_repositories(monkeypatch)
+    _patch_import_job_dependencies(monkeypatch, league_repository)
+    create_response = function_app.create_league(
+        _request("user-one", _league_body("111", name="Private League"))
+    )
+    league_id = json.loads(create_response.get_body())["league"]["id"]
+
+    response = function_app.create_import(
+        _request(
+            "user-one",
+            {"jobType": "initial_import", "requestedSeasons": [2014]},
+            {"leagueId": league_id},
+        )
+    )
+
+    assert response.status_code == 400
+    assert json.loads(response.get_body())["message"] == "requestedSeasons must be 2015 or later."
+
+
 def test_create_import_requires_user_league_authorization(monkeypatch):
     _, league_repository = _patch_repositories(monkeypatch)
     _patch_import_job_dependencies(monkeypatch, league_repository)
@@ -619,6 +639,17 @@ def test_create_league_rejects_non_espn_platform(monkeypatch):
 
     assert response.status_code == 400
     assert json.loads(response.get_body())["error"] == "bad_request"
+
+
+def test_create_league_rejects_pre_2015_season(monkeypatch):
+    _patch_repositories(monkeypatch)
+    body = _league_body("111", name="Old League")
+    body["firstSeason"] = 2014
+
+    response = function_app.create_league(_request("user-one", body))
+
+    assert response.status_code == 400
+    assert json.loads(response.get_body())["message"] == "firstSeason must be 2015 or later."
 
 
 def _patch_repositories(monkeypatch):

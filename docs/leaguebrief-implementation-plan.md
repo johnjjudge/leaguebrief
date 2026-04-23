@@ -589,6 +589,13 @@ Acceptance criteria:
 - reference tables populate correctly
 ```
 
+Implementation note: FantasyPros CSVs are packaged with the worker under
+`apps/worker/adpreferences`. They are not copied to Blob Storage; SQL
+`reference_files.blob_path` stores the package-relative provenance path. Imports
+are versioned by file content hash, use ESPN ADP when present and `AVG`
+otherwise, and match players by normalized name plus base position. MVP imports
+are limited to 2015 and later.
+
 ### Codex task prompt for normalization
 ```text
 Use /plan first.

@@ -7,6 +7,7 @@ from typing import Protocol
 from uuid import UUID
 
 SUPPORTED_LEAGUE_PLATFORMS = {"espn"}
+MIN_SUPPORTED_LEAGUE_SEASON = 2015
 
 
 class LeagueValidationError(ValueError):
@@ -256,10 +257,10 @@ def _validate_platform(platform: str) -> None:
 
 
 def _validate_season_range(first_season: int | None, last_season: int | None) -> None:
-    if first_season is not None and first_season < 1900:
-        raise LeagueValidationError("firstSeason must be a valid year.")
-    if last_season is not None and last_season < 1900:
-        raise LeagueValidationError("lastSeason must be a valid year.")
+    if first_season is not None and first_season < MIN_SUPPORTED_LEAGUE_SEASON:
+        raise LeagueValidationError("firstSeason must be 2015 or later.")
+    if last_season is not None and last_season < MIN_SUPPORTED_LEAGUE_SEASON:
+        raise LeagueValidationError("lastSeason must be 2015 or later.")
     if first_season is not None and last_season is not None and first_season > last_season:
         raise LeagueValidationError("firstSeason cannot be after lastSeason.")
 

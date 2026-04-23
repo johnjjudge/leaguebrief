@@ -9,6 +9,7 @@ from uuid import UUID
 
 TERMINAL_JOB_STATUSES = {"succeeded", "partial_success", "failed", "cancelled"}
 DEFAULT_MAX_ATTEMPTS = 3
+MIN_SUPPORTED_IMPORT_SEASON = 2015
 
 
 class WorkerMessageError(ValueError):
@@ -245,6 +246,8 @@ def _parse_requested_seasons(value: object) -> tuple[int, ...] | None:
     for item in value:
         if isinstance(item, bool) or not isinstance(item, int):
             raise WorkerMessageError("requestedSeasons must contain years.")
+        if item < MIN_SUPPORTED_IMPORT_SEASON:
+            raise WorkerMessageError("requestedSeasons must be 2015 or later.")
         seasons.append(item)
     return tuple(seasons)
 

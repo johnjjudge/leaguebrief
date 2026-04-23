@@ -10,10 +10,12 @@ The deployable app components live under:
 - `apps/api`: Python Azure Functions API with health, auth, league onboarding, private ESPN credentials, import job enqueueing, and SQL migrations.
 - `apps/worker`: Python Azure Functions queue worker bound to `IMPORT_JOBS_QUEUE_NAME`.
 - `packages/espn-adapter`: isolated Python ESPN fantasy API adapter used by the worker.
+- `packages/fantasypros-adapter`: isolated Python FantasyPros CSV adapter used by the worker.
 
 The current app implements the auth, schema, league onboarding, private
-credential, async import job foundations, and ESPN raw ingestion. It does not
-implement normalization or analytics dashboards yet.
+credential, async import job foundations, ESPN raw ingestion, and FantasyPros
+reference CSV ingestion. It does not implement normalization or analytics
+dashboards yet.
 
 ## Local app development
 
@@ -83,6 +85,7 @@ Required local Function App settings:
 - `AzureWebJobsStorage=<storage-connection-string>` or `UseDevelopmentStorage=true` with Azurite
 - `IMPORT_JOBS_QUEUE_NAME=import-jobs`
 - `STORAGE_RAW_ESPN_CONTAINER=raw-espn`
+- `FANTASYPROS_ADPREFERENCES_DIR=<optional-local-csv-dir>`; defaults to packaged worker CSVs
 - `KEY_VAULT_URI=<vault-uri>` for API credential submission and worker credential reads
 - SQL connection settings for API and worker SQL access
 - `LEAGUEBRIEF_ENVIRONMENT=local`

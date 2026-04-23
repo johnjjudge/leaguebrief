@@ -5,6 +5,7 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "IMPORT_JOBS_QUEUE_NAME": "import-jobs",
     "STORAGE_RAW_ESPN_CONTAINER": "raw-espn",
+    "FANTASYPROS_ADPREFERENCES_DIR": "",
     "KEY_VAULT_URI": "",
     "LEAGUEBRIEF_ENVIRONMENT": "local",
     "APP_KIND": "worker",

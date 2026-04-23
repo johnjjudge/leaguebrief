@@ -6,6 +6,11 @@ from leaguebrief_espn_adapter import EspnFantasyClient
 from leaguebrief_worker.blobs import AzureBlobRawPayloadStore
 from leaguebrief_worker.db.jobs import SqlWorkerJobRepository
 from leaguebrief_worker.db.raw_snapshots import SqlRawSnapshotRepository
+from leaguebrief_worker.db.references import SqlFantasyProsReferenceRepository
+from leaguebrief_worker.fantasypros import (
+    FANTASYPROS_INGESTION_JOB_TYPES,
+    FantasyProsIngestionService,
+)
 from leaguebrief_worker.ingestion import (
     ESPN_RAW_INGESTION_JOB_TYPES,
     EspnRawIngestionService,
@@ -29,10 +34,16 @@ def get_espn_raw_ingestion_service() -> EspnRawIngestionService:
     )
 
 
+def get_fantasypros_ingestion_service() -> FantasyProsIngestionService:
+    return FantasyProsIngestionService(repository=SqlFantasyProsReferenceRepository())
+
+
 def run_import_job(message: ImportJobMessage) -> WorkerRunResult:
-    if message.job_type not in ESPN_RAW_INGESTION_JOB_TYPES:
-        return WorkerRunResult.succeeded()
-    return get_espn_raw_ingestion_service().run(message)
+    if message.job_type in ESPN_RAW_INGESTION_JOB_TYPES:
+        return get_espn_raw_ingestion_service().run(message)
+    if message.job_type in FANTASYPROS_INGESTION_JOB_TYPES:
+        return get_fantasypros_ingestion_service().run(message)
+    return WorkerRunResult.succeeded()
 
 
 @app.queue_trigger(

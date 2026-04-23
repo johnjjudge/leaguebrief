@@ -3,7 +3,13 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
-from leaguebrief_worker.jobs import WorkerJobFailed, WorkerRunResult, WorkerService
+from leaguebrief_worker.jobs import (
+    WorkerJobFailed,
+    WorkerMessageError,
+    WorkerRunResult,
+    WorkerService,
+    parse_import_job_message,
+)
 
 
 class _InMemoryWorkerJobRepository:
@@ -129,6 +135,16 @@ def test_terminal_duplicate_message_is_noop():
 
     assert repository.status == "succeeded"
     assert _event_types(repository) == ["job_attempted", "job_skipped"]
+
+
+def test_parse_import_job_message_rejects_pre_2015_requested_season():
+    message = _message()
+    message["requestedSeasons"] = [2014]
+
+    with pytest.raises(WorkerMessageError) as exc_info:
+        parse_import_job_message(json.dumps(message))
+
+    assert str(exc_info.value) == "requestedSeasons must be 2015 or later."
 
 
 def _message():

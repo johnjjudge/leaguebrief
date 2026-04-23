@@ -4,3 +4,4 @@ azure-keyvault-secrets==4.8.0
 azure-storage-blob>=12.19.0,<13.0.0
 pyodbc==5.3.0
 ../../packages/espn-adapter
+../../packages/fantasypros-adapter

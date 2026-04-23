@@ -715,7 +715,9 @@ Tracks raw ESPN payloads stored in Blob Storage.
 - `fetched_at`
 
 #### `reference_files`
-Tracks FantasyPros source CSV files.
+Tracks FantasyPros source CSV files. For packaged static references,
+`blob_path` is a package-relative provenance path rather than an Azure Blob
+path.
 
 - `id` (uuid, pk)
 - `source` (`fantasypros`)
@@ -877,7 +879,10 @@ Optional but useful for waiver analytics.
 ### 18.7 Reference ranking tables
 
 #### `player_reference`
-Canonical player identity mapping.
+Canonical player identity mapping. FantasyPros imports match players by
+normalized name plus base position. Normalization strips casing, punctuation,
+accents, and suffixes such as `Jr.`, `II`, and `III`; NFL team is not part of
+identity because it changes by season.
 
 - `id` (uuid, pk)
 - `canonical_player_name`
@@ -1036,6 +1041,10 @@ stateDiagram-v2
 - `refresh_current_data`
 - `recompute_metrics`
 - `ingest_fantasypros`
+
+MVP season selection is limited to 2015 and later because the packaged
+FantasyPros reference files start with the 2015 season. Half-PPR reference
+selection falls back to PPR when a season does not have a half-PPR CSV.
 
 ---
 

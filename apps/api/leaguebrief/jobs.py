@@ -16,6 +16,7 @@ SUPPORTED_IMPORT_JOB_TYPES = {
 }
 MAX_REASONABLE_PRIORITY = 100
 MIN_REASONABLE_PRIORITY = -100
+MIN_SUPPORTED_IMPORT_SEASON = 2015
 
 
 class ImportJobValidationError(ValueError):
@@ -173,8 +174,8 @@ def _parse_requested_seasons(value: object) -> tuple[int, ...] | None:
     for item in value:
         if isinstance(item, bool) or not isinstance(item, int):
             raise ImportJobValidationError("requestedSeasons must contain only years.")
-        if item < 1900:
-            raise ImportJobValidationError("requestedSeasons must contain valid years.")
+        if item < MIN_SUPPORTED_IMPORT_SEASON:
+            raise ImportJobValidationError("requestedSeasons must be 2015 or later.")
         seasons.append(item)
     return tuple(seasons)
 
